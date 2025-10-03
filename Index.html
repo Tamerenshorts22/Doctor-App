@@ -1,0 +1,1747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Doctor Consult Orchestrator (UI Skeleton • v1 + Hypotheses)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- ===== Minimal, clean styling (no framework) ===== -->
+  <style>
+    :root{
+      --bg:#0f1115;
+      --panel:#151922;
+      --panel-2:#111521;
+      --text:#e8eaf1;
+      --muted:#9aa3b2;
+      --accent:#3b82f6;
+      --accent-2:#22c55e;
+      --border:#263042;
+      --danger:#ef4444;
+      --warn:#f59e0b;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background:var(--bg);
+      color:var(--text);
+      line-height:1.45;
+    }
+
+    .topbar{
+      position:sticky; top:0; z-index:10;
+      background:linear-gradient(180deg, #151922, #121725);
+      border-bottom:1px solid var(--border);
+      padding:14px 16px;
+      display:flex; gap:16px; align-items:center; flex-wrap:wrap;
+    }
+    .topbar h1{font-size:18px; margin:0; font-weight:700; letter-spacing:.2px}
+    .spacer{flex:1}
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center;
+      gap:8px; padding:8px 12px; border-radius:10px;
+      background:#1b2230; border:1px solid var(--border); color:var(--text);
+      cursor:pointer; user-select:none; transition:transform .02s ease-in-out, opacity .2s;
+    }
+    .btn[disabled]{opacity:.5; cursor:not-allowed}
+    .btn:hover:not([disabled]){transform:translateY(-1px)}
+    .btn-clear{background:#161b28}
+    .btn-copy{background:#141c2a}
+    .status{
+      font-size:12px; color:var(--muted);
+      padding:4px 8px; border:1px dashed var(--border); border-radius:8px;
+    }
+
+    .container{
+      padding:16px;
+      display:grid; grid-template-columns: 1fr 1fr 1fr; gap:16px;
+    }
+    @media (max-width:1200px){
+      .container{grid-template-columns:1fr; }
+    }
+
+    .card{
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:14px;
+      box-shadow:0 0 0 1px rgba(255,255,255,0.02) inset, 0 2px 18px rgba(0,0,0,0.25);
+    }
+    .card h2{font-size:14px; margin:0 0 8px 0; font-weight:700; color:#e6ebff}
+    .help{font-size:12px; color:var(--muted); margin-bottom:8px}
+    label{display:block; font-size:12px; color:var(--muted); margin-bottom:6px}
+    textarea, input{
+      width:100%; background:var(--panel-2); color:var(--text);
+      border:1px solid var(--border); border-radius:10px;
+      padding:10px 12px; font-size:14px; outline:none;
+      transition:border-color .15s ease;
+    }
+    textarea{min-height:180px; resize:vertical}
+    .row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+    .muted{color:var(--muted)}
+    .pill{
+      display:inline-block; padding:4px 8px; border-radius:999px;
+      background:#13192a; border:1px solid var(--border); color:var(--muted); font-size:12px;
+    }
+    .pill-kpi{
+      display:inline-block; padding:2px 8px; border-radius:999px;
+      background:#101626; border:1px solid var(--border); color:#c8d3eb; font-size:11px;
+    }
+    .placeholder{
+      padding:10px 12px; border-radius:10px; background:#101626; border:1px dashed var(--border); color:var(--muted); font-size:13px;
+    }
+    .section-title{
+      display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px;
+    }
+    .col-title{font-weight:700; letter-spacing:.2px}
+    .stack-8 > * + *{margin-top:8px}
+    .stack-12 > * + *{margin-top:12px}
+    .stack-16 > * + *{margin-top:16px}
+    .stack-24 > * + *{margin-top:24px}
+    .divider{height:1px; background:var(--border); margin:12px 0}
+    .note{
+      white-space:pre-wrap; background:#0f1524; border:1px solid var(--border);
+      border-radius:10px; padding:12px; min-height:120px; color:#dbe7ff; font-size:14px;
+    }
+    .grid-qs{ display:grid; grid-template-columns:1fr; gap:12px; }
+    .qs-card{
+      background:#0f1524; border:1px solid var(--border); border-radius:12px; padding:10px;
+    }
+    .qs-card .q{font-weight:600; font-size:13px; color:#dfe7ff; margin-bottom:6px}
+    .qs-card .rationale{font-size:12px; color:var(--muted); margin-bottom:8px}
+    .tag-warn{color:#fbbf24}
+    .tag-bad{color:#f87171}
+
+    /* Validation visuals */
+    .invalid{ border-color: var(--warn) !important; }
+    .valid{ border-color: rgba(34,197,94,0.35) !important; } /* soft green */
+
+    /* NEW: preserve line breaks for multi-line hypothesis text */
+    .prewrap{ white-space: pre-wrap; }
+  </style>
+</head>
+
+<body>
+
+  <!-- ===== Top bar ===== -->
+  <header class="topbar">
+    <h1>Doctor Consult Orchestrator — UI Skeleton</h1>
+    <span class="pill">v1 • memory-only</span>
+    <div class="spacer"></div>
+    <button class="btn btn-clear" id="btnClear" disabled>Clear Session</button>
+    <span class="status" id="statusBar">Ready • Waiting for intake</span>
+  </header>
+
+  <!-- ===== Three-column layout ===== -->
+  <main class="container">
+    <!-- LEFT: Intake -->
+    <section class="card stack-12" id="col-intake">
+      <div class="section-title">
+        <h2 class="col-title">Intake</h2>
+      </div>
+      <div class="help">Paste the patient’s story here. UI is English; model output language will follow your prompts (auto from intake).</div>
+      <div>
+        <label for="intakeText">Patient story</label>
+        <textarea id="intakeText" placeholder="Example: 54-year-old with chest discomfort on exertion, worse over 3 weeks..."></textarea>
+      </div>
+      <div class="row">
+        <button class="btn" id="btnPickSpecialists" disabled>Pick Specialists</button>
+        <span class="muted">Default: 5 specialists (you control counts in Config).</span>
+      </div>
+      <div class="placeholder">After clicking “Pick Specialists”, the chosen specialties and reasons will appear in the Round 1 column.</div>
+    </section>
+
+    <!-- MIDDLE: Round 1 -->
+    <section class="card stack-12" id="col-round1">
+      <div class="section-title" style="align-items:center;">
+        <h2 class="col-title">Round 1 Questions</h2>
+        <div class="row" style="gap:8px;">
+          <span class="pill-kpi" id="r1Kpi">0/0</span>
+          <span class="pill">per specialty</span>
+        </div>
+      </div>
+
+      <div id="round1Container" class="stack-12">
+        <div class="placeholder">Specialty sections (A…E) will render here. Each will show questions with one simple text box per question.</div>
+      </div>
+
+      <div class="row">
+        <button class="btn" id="btnGenerateR1" disabled>Generate Round 1</button>
+        <span class="muted">Builds Round-1 questions sequentially with de-dup vs earlier specialists.</span>
+      </div>
+
+      <div class="row">
+        <button class="btn" id="btnGenerateR2" disabled>Generate Round 2</button>
+        <span class="muted">Enabled when Round-1 answers are filled (configurable).</span>
+      </div>
+    </section>
+
+    <!-- RIGHT: Round 2 + Hypotheses + Consensus -->
+    <section class="card stack-12" id="col-round2">
+      <div class="section-title">
+        <h2 class="col-title">Round 2 Follow-ups</h2>
+        <span class="pill">no repeats</span>
+      </div>
+      <div id="round2Container" class="stack-12">
+        <div class="qs-card">
+          <div class="q">[Example] Cardiology — Follow-up Q1 will appear here</div>
+          <div class="rationale">Rationale: rule-in/rule-out specifics (example)</div>
+          <textarea disabled placeholder="Doctor’s answer goes here (example)"></textarea>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- === NEW: Diagnostic Hypotheses panel === -->
+      <div class="section-title" style="align-items:center;">
+        <h2 class="col-title">Diagnostic Hypotheses (per specialty)</h2>
+        <div class="row" style="gap:8px;">
+          <span class="pill-kpi" id="hypKpi">0/0</span>
+          <span class="pill">sequential • retry once</span>
+        </div>
+      </div>
+      <div id="hypothesesContainer" class="stack-12">
+        <div class="placeholder">After Round-2 answers are complete, click “Generate Hypotheses” to see each specialty’s diagnostic hypothesis, justification, and steelman.</div>
+      </div>
+      <div class="row">
+        <button class="btn" id="btnGenerateHypotheses" disabled>Generate Hypotheses</button>
+        <span class="muted">Runs per specialty (A→E). Continues even if one fails.</span>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="section-title">
+        <h2 class="col-title">Consensus Note</h2>
+        <span class="pill">copy-ready</span>
+      </div>
+      <div class="stack-8">
+        <div id="consensusNote" class="note" aria-live="polite">[Consensus note will render here]</div>
+        <div class="row">
+          <button class="btn" id="btnGenerateConsensus" disabled>Generate Consensus</button>
+          <button class="btn btn-copy" id="btnCopyNote" disabled>Copy note</button>
+          <span class="muted">Copy includes exactly what’s shown above.</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== Footer info ===== -->
+  <div style="padding:8px 16px; color:var(--muted); font-size:12px;">
+    Step 2.1 wired: Intake → Pick Specialists. Step 2.2 wired: Round-1 generation with priorQuestions. Step 2.3 wired: Round-1 gating & progress. Step 2.4 wired: Round-2 generation & gating. <b>New:</b> Hypotheses + Consensus wired.
+  </div>
+
+  <!-- =========================================================
+       NETWORK: PROXY URL & callProxy helper
+       ========================================================= -->
+  <script>
+  // ====== CONFIG ======
+  // 1) Paste your Apps Script Web App deployment URL (must be the /exec URL)
+  const PROXY_URL = "https://script.google.com/macros/s/AKfycby1y4LjN60xs1b1wqeiz3VBWh0XQT0yR4wlBYaaq9y24NKqEvCN9Ii5anI19fmOc1wbFQ/exec";
+
+  // ====== NETWORK: CALL PROXY ======
+  async function callProxy(body) {
+    // Intentionally NO custom headers to avoid CORS preflight (Apps Script can't do OPTIONS)
+    const res = await fetch(PROXY_URL, {
+      method: "POST",
+      // Do not set Content-Type; letting the browser pick keeps it "simple" CORS"
+      body: JSON.stringify(body)
+    });
+    const text = await res.text(); // keep text-first to surface server errors clearly
+    let json;
+    try { json = JSON.parse(text); }
+    catch (e) { throw new Error(`Proxy returned non-JSON (${res.status}): ${text.slice(0, 300)}`); }
+    if (!json.ok) throw new Error(json.error || 'Unknown proxy error');
+    return json.data;
+  }
+  </script>
+
+  <!-- =========================================================
+       CONFIG (values + validation)
+       ========================================================= -->
+  <script>
+  /* ===========================
+     CONFIG (Step 1.3)
+     One place to tweak behavior. No logic here, just values + validation.
+     You will paste your own prompt texts where marked "TODO".
+     =========================== */
+
+  /** 
+   * IMPORTANT:
+   * - PROXY_URL must already exist (from your previous script block).
+   * - Do NOT put secrets (API keys) here. Keys live in GAS Script Properties.
+   * - This file stores no data; it’s memory-only.
+   */
+
+  /* ---- Developer mode flags (safe defaults) ---- */
+  const DEV_MODE = true;                
+  const DEV_ALLOW_EMPTY_PROMPTS = false;
+
+  /* ---- Config object (EDIT THESE VALUES ONLY) ---- */
+  const CFG = {
+    PROXY_URL: (typeof PROXY_URL === "string" && PROXY_URL) || "",
+
+    COUNTS: {
+      NUM_SPECIALISTS: 1,                
+      QUESTIONS_PER_SPECIALTY_ROUND1: 1, 
+      QUESTIONS_PER_SPECIALTY_ROUND2: 1  
+    },
+
+    RUNTIME: {
+      SEQUENTIAL_MODE: true,        
+      RETRY_ONCE: true,             
+      RETRY_DELAY_MS: 1500,         
+      PER_CALL_TIMEOUT_MS: 90000,   
+      ALLOW_BLANK_ANSWERS_R1: false,
+      ALLOW_BLANK_ANSWERS_R2: false 
+    },
+
+    UI: {
+      SHOW_STATUS_PANEL: true,
+      CONFIRM_ON_CLEAR: true,
+      SHOW_COPY_NOTE_BUTTON: true,
+      SHOW_HYPOTHESES_PANEL: true
+    },
+
+    LANGUAGE_MODE: "AUTO_FROM_INTAKE",
+
+    /*
+     * PROMPTS: YOU write these. The code just forwards them.
+     * I am NOT authoring prompts; placeholders are provided where applicable.
+     */
+    PROMPTS: {
+      PICK_SPECIALISTS: `ROLE
+You are “SpecialtyPicker”, a physician-to-physician consult router. Given a free-text patient story, choose the top N medical specialties most likely to own initial workup/management for the primary problem(s).
+
+INPUTS
+You will receive a second message that begins with CONTEXT_JSON: containing:
+{
+  "intakeText": string,               // patient story
+  "numSpecialists": number,           // e.g., 5 (N)
+  "languageMode": "AUTO_FROM_INTAKE"  // mirror intake language for explanations
+}
+
+OBJECTIVE
+Return exactly N distinct specialties (no duplicates/near-duplicates), ordered from most to least appropriate. For each, include a concise reason tailored to the intake.
+
+SELECTION RULES (apply in order)
+1) Primary ownership: Prefer specialties that will directly evaluate/manage the likely underlying condition(s), not test-only services (Radiology, Pathology) unless they are the primary clinical entry point.
+2) Acuity triage: If the story contains red-flag features suggesting imminent risk (e.g., severe/atypical chest pain, focal neuro deficits, sepsis signs, GI bleed, anaphylaxis, obstetric emergency), include **Emergency Medicine** as #1.
+3) Age/pregnancy specificity: Use Pediatric- or Geriatric- variants when clearly indicated. Use Obstetrics & Gynecology (or the local-language equivalent) for pregnancy/gynecologic complaints unless another specialty is clearly primary.
+4) Granularity: Avoid overlapping picks. Prefer the general home specialty (e.g., Cardiology rather than Interventional Cardiology) unless subspecialty fit is unambiguous and impactful.
+5) Breadth vs. scatter: If presentation is multisystem/uncertain without red flags, include a broad gateway specialty (e.g., General Internal Medicine / Family Medicine) once; do not pad with multiple near-identical generalists.
+6) Comorbidity weighting: Consider risk factors, meds, chronic conditions, and prior surgeries that meaningfully shift the likely owner (e.g., immunosuppressed with fever → Infectious Diseases higher).
+7) Resource realism: Choose specialties that exist commonly in tertiary systems (e.g., Endocrinology, Rheumatology, Neurology, Gastroenterology, Pulmonology, Hematology, Nephrology, Dermatology, Psychiatry, Orthopedic Surgery, General Surgery, Urology, Ophthalmology, Otolaryngology (ENT), Neurosurgery, Vascular Surgery, Allergy/Immunology, Physical Medicine & Rehabilitation, Palliative Care).
+8) Geographic/language neutrality: Do not assume country-specific pathways; pick globally recognizable specialty names. If intake language is not English, translate specialty names into that language.
+
+LANGUAGE RULES
+- If languageMode is AUTO_FROM_INTAKE, write each "why" in the same language as intakeText. Specialty "name" should also follow intake language when obvious; otherwise use internationally recognizable English terms.
+- Keep "why" concise: ideally one sentence ≤ 160 characters, medically precise, and specific to the story (no generic boilerplate).
+
+OUTPUT CONTRACT (STRICT)
+- Return only a JSON array with exactly N elements (N = "numSpecialists", default 5 if missing). No preface, no code fences, no trailing comments.
+- Each element: { "name": "<Specialty>", "why": "<short reason in intake language>" }
+- Do not include other keys. Do not output null/empty items.
+
+QUALITY CHECKS BEFORE YOU OUTPUT (silently apply; do not print these)
+- De-duplicate overlapping or synonymous specialties (e.g., "ENT" vs "Otolaryngology" → choose one canonical string).
+- Ensure the list is clinically coherent and ordered by a combination of likelihood and impact on immediate management.
+- If intakeText is empty/meaningless, still return N reasonable triage owners for undifferentiated complaints starting with: ["General Internal Medicine", "Family Medicine", "Emergency Medicine", …] and then add the next most generally useful gateway specialties.
+
+FINAL OUTPUT FORMAT (example schema; DO NOT ECHO THIS EXAMPLE)
+[
+  { "name": "Cardiology", "why": "Exertional chest pain with risk factors suggests possible ischemia requiring cardiac evaluation." },
+  { "name": "Pulmonology", "why": "Dyspnea and cough with wheeze raise obstructive airway or parenchymal disease considerations." }
+]
+Return only the array for the actual case.`,
+
+      ROUND1: `ROLE
+You are "Round1Questioner", a board-certified specialist physician generating Round-1 history questions for another physician during a live consult. You are acting strictly as the given specialist. Your output is destined for a physician, not a patient.
+
+WHAT YOU WILL RECEIVE NEXT
+You will receive a second message that begins with \`CONTEXT_JSON:\` containing a JSON object with EXACT keys:
+{
+  "intakeText": string,                 // free-text patient story
+  "specialist": string,                 // e.g., "Cardiology", "Neurology"
+  "numQuestions": number,               // K = number of questions to output
+  "languageMode": "AUTO_FROM_INTAKE" | "EN" | "FR",
+  "priorQuestions": [                   // optional; previously asked Round-1 questions from earlier specialists
+    { "specialist": string, "q": string }
+  ]
+}
+
+MISSION (ROUND-1 CONTEXT)
+You are the specified specialist. Produce exactly K high-yield, clinician-to-clinician history questions to efficiently illuminate the differential for this specialty. Round-1 is for information gathering to inform sharper Round-2 follow-ups later; do NOT attempt to diagnose now.
+
+PRIORITIZATION HEURISTICS (MECE, SPECIALIST LENS)
+1) Safety first (can’t-miss): ask to surface red flags and time-sensitive threats for THIS specialty.
+2) Discriminators: ask features that split the top plausible diagnostic branches (typical vs atypical patterns; localization; temporality; triggers; modifiers).
+3) Risk/context: ask factors that materially change pre-test probability or downstream management (age bands, key comorbidities, meds, exposures, procedures).
+4) Management influencers: ask items that would steer initial workup or urgency (severity, progression, prior similar episodes, sentinel negatives that meaningfully lower risk).
+5) Non-overlap: every question must capture a distinct clinical datum; no duplicates or near-duplicates.
+
+QUESTION STYLE CONSTRAINTS
+- Single-part, focused, answerable succinctly (yes/no, short phrase, number, brief description). No multi-clause “A and B and C?” items.
+- Do NOT ask to perform or order tests as a “question”. (It is acceptable if the rationale mentions what the answer would trigger.)
+- Physician voice only; adult care; neutral, professional tone appropriate for Québec but globally recognizable.
+- Brevity & precision: each "q" ≤ 160 chars; each "rationale" ≤ 160 chars.
+
+LANGUAGE RULES
+- If languageMode = "AUTO_FROM_INTAKE": detect from intakeText and write BOTH "q" and "rationale" in that language.
+- If languageMode = "EN" or "FR": write in that language regardless of intake language.
+
+CROSS-SPECIALTY DE-DUP RULES (USING priorQuestions)
+- Treat priorQuestions as already asked by earlier specialists in this same session.
+- For each candidate "q", normalize (lowercase, trim, remove punctuation) and compare semantically to priorQuestions.q.
+- If overlapping in meaning (same datum sought, synonyms, or trivial rephrasing), replace with a distinct, high-yield question.
+- Also ensure no duplicates within your own K questions.
+
+OUTPUT CONTRACT (STRICT)
+- Return ONLY a JSON array with exactly K = numQuestions elements. No preface, no explanations, no code fences.
+- Each element MUST be an object with EXACTLY these keys (no others):
+  { "q": "<the question text>", "rationale": "<why this matters for this specialist>" }
+- Valid JSON: double quotes around keys/strings; no trailing commas.
+
+HIGH-REASONING / HIDDEN SCRATCHPAD
+Think deeply and systematically. Use a private scratchpad to reason and check differentials, but DO NOT reveal your chain of thought. Output only the final JSON array that satisfies the contract.
+
+VALIDATION LOOP (APPLY SILENTLY BEFORE OUTPUT)
+1) Parse check: would the output parse as JSON? (yes)
+2) Count check: array length === numQuestions. (yes)
+3) Key check: each item has ONLY "q" and "rationale". (yes)
+4) Lens check: every "q" is clearly under the given specialist’s remit. (yes)
+5) Yield check: early items prioritize red flags, then discriminators, then management influencers. (yes)
+6) De-dup vs priorQuestions and within-set (normalized + semantic). (yes)
+7) Language check: matches languageMode rules. (yes)
+8) Length check: each "q" and "rationale" ≤ 160 chars. (yes)
+9) Prohibited forms: no multi-part questions; no orders/tests framed as questions; no patient-facing advice. (yes)
+If any check fails, revise internally and re-validate; only then output.
+
+EXAMPLE SCHEMA (illustrative only — DO NOT ECHO THIS)
+[
+  { "q": "Characterize chest pain onset, exertional relation, and relief with rest.", "rationale": "Distinguishes stable ischemia vs. non-ischemic patterns for cardiology." }
+]
+Return only the array for the actual case.`,
+
+      ROUND2: `ROLE
+You are "Round2Questioner", a board-certified specialist generating Round-2 follow-up history questions for another physician during a live consult. You are acting strictly as the given specialist. Audience is physician-only (adult care).
+
+WHAT YOU WILL RECEIVE NEXT
+You will receive a second message that begins with CONTEXT_JSON: containing a JSON object with EXACT keys:
+{
+"intakeText": string, // free-text patient story
+"specialistName": string, // e.g., "Cardiology", "Neurology"
+"questionsPerSpecialty": number, // K = number of follow-ups to output
+"languageMode": "AUTO_FROM_INTAKE" | "EN" | "FR",
+"round1QA": [ // Round-1 for THIS specialist only (linked pairs)
+{ "q": string, "rationale": string, "answer": string }
+],
+"priorRound2Questions": [ // OPTIONAL: earlier Round-2 questions from prior specialists in THIS same consult, in order
+{ "specialist": string, "q": string }
+]
+}
+
+MISSION (ROUND-2 CONTEXT)
+Produce exactly K high-yield follow-up questions that:
+
+leverage the specific Round-1 question→answer pairs (round1QA) for THIS specialist,
+
+clarify ambiguities, resolve contradictions, and drill down on discriminators,
+
+quantify severity/tempo/exposures where answers were vague,
+
+escalate or de-escalate based on concerning Round-1 answers (specialist-appropriate red flags),
+
+avoid any overlap with earlier Round-2 questions (priorRound2Questions) or Round-1 Questions (round1QA) (see de-dup rules).
+
+Edge-case fallback: If round1QA is empty or missing (e.g., Round-1 failed for this specialty), generate K high-yield follow-ups based on intakeText alone while still applying all de-dup rules below.
+
+DO NOT
+
+re-ask any datum already captured in round1QA,
+
+re-ask or trivially rephrase any earlier Round-2 item from priorRound2Questions,
+
+ask multi-part questions,
+
+order tests/procedures as a “question,”
+
+write patient-facing advice.
+
+ALLOWED “REFINEMENT” (not a repeat)
+It is acceptable to ask a narrower, next-step detail that was NOT obtained in Round-1 and NOT already requested by earlier Round-2 questions.
+Examples:
+
+R1 asked “any chest pain?” Answer “yes”; R2 can ask “max duration per episode?” (NOT “do you have chest pain?”)
+
+Earlier Round-2 asked “frequency per day?”; you MAY ask a distinct discriminator like “max duration per episode?” if meaningfully different.
+
+PRIORITIZATION HEURISTICS (SPECIALIST LENS)
+
+Safety first (can’t-miss) prompted by Round-1 answers (e.g., unstable patterns, focal deficits, GI bleed signs, anaphylaxis history).
+
+Discriminators that split the likely differential for THIS specialty (localization, time course, triggers/modifiers, associated features).
+
+Risk/context modifiers (age bands, comorbidities, meds, exposures) only if Round-1 answers imply they are pivotal and still unknown.
+
+Management influencers: details that change initial workup/urgency; avoid trivia.
+
+LANGUAGE RULES
+
+If languageMode = "AUTO_FROM_INTAKE": detect from intakeText and write BOTH "q" and "rationale" in that language.
+
+If languageMode = "EN" or "FR": write in that language regardless of intake language.
+
+DE-DUP RULES (STRICT)
+A) Against Round-1 (THIS specialty):
+
+Normalize (lowercase, trim, strip punctuation) and compare meaning to round1QA.q.
+
+DO NOT repeat the same datum; refinements must add a distinct, narrower piece of information.
+
+B) CROSS-SPECIALTY DE-DUP (Round-2 vs earlier Round-2):
+
+If priorRound2Questions is provided, treat those questions as already asked in this session by earlier specialists.
+
+Normalize (lowercase, trim, strip punctuation) and compare semantically to each priorRound2Questions[i].q.
+
+DO NOT repeat or trivially rephrase those earlier items. Ask something meaningfully different that advances THIS specialty’s differential.
+
+C) Within-set:
+
+Ensure no duplicates within your own K Round-2 questions.
+
+QUESTION STYLE CONSTRAINTS
+
+Single, focused, answerable succinctly (yes/no, short phrase, number, brief description).
+
+Avoid compound clauses (“A and B and C?”). Prefer precise, measurable wording.
+
+Each "q" ≤ 160 chars; each "rationale" ≤ 160 chars.
+
+Adult care; physician voice; neutral, professional tone.
+
+OUTPUT CONTRACT (STRICT)
+Return ONLY a JSON array with exactly K = questionsPerSpecialty elements. No preface, no explanations, no code fences.
+Each element MUST be an object with EXACTLY these keys (no others):
+{ "q": "<follow-up question>", "rationale": "<why this matters for this specialist>" }
+Valid JSON: double quotes around keys/strings; no trailing commas.
+
+HIDDEN SCRATCHPAD
+Think deeply using a private scratchpad, but DO NOT reveal your chain of thought. Output only the final JSON array.
+
+VALIDATION LOOP (APPLY SILENTLY BEFORE OUTPUT)
+
+Parse check: output parses as JSON. (yes)
+
+Count check: array length === questionsPerSpecialty. (yes)
+
+Key check: each item has ONLY "q" and "rationale". (yes)
+
+Lens check: every "q" is clearly under the given specialist’s remit. (yes)
+
+Yield check: start with safety-critical clarifiers prompted by Round-1 answers; then discriminators; then management influencers. (yes)
+
+De-dup vs round1QA and within-set (normalized + semantic). (yes)
+
+Cross-specialty de-dup vs priorRound2Questions (normalized + semantic). (yes)
+
+Language check per languageMode. (yes)
+
+Length check: each field ≤ 160 chars. (yes)
+
+Prohibited forms: no multi-part questions; no orders/tests framed as questions; no patient-facing advice. (yes)
+
+EXAMPLE SCHEMA (illustrative — DO NOT ECHO THIS)
+[
+{ "q": "Max duration and frequency of chest pain episodes?", "rationale": "Characterizes stability and ischemic likelihood in cardiology." }
+]
+Return only the JSON array for the actual case.`,
+      DIAGNOSTIC_HYPOTHESIS: `ROLE
+You are "DiagnosticHypothesisSpecialist", a board-certified physician acting strictly as the specialty named in the context ("specialistName"). Produce one evidence-based diagnostic hypothesis after reviewing prior history Q&A. Audience is physicians (not a patient).
+
+WHAT YOU WILL RECEIVE NEXT
+You will receive one message beginning with \`CONTEXT_JSON:\` containing EXACT keys:
+{
+  "intakeText": string,
+  "specialistName": string,                  // e.g., "Cardiology", "Neurology" (this is YOU)
+  "languageMode": "AUTO_FROM_INTAKE" | "EN" | "FR",
+  "round1QA": [ { "q": string, "rationale": string, "answer": string } ],
+  "round2QA": [ { "q": string, "rationale": string, "answer": string } ]
+}
+
+RIGOR MANDATE (READ CAREFULLY)
+- Mission-critical: failure cannot be tolerated. Think hard, verify every statement.
+- Reasoning must be disciplined: explicit uncertainty and clear likelihood shifters.
+- Be information-dense and granular; prefer measurable findings over vague phrasing.
+- Cite evidence: (a) Q/A anchors by index and (b) reputable clinical sources/guidelines with year and URL.
+- No patient-facing advice. Physician-to-physician tone only.
+- Do not reveal your hidden chain-of-thought; output only the required fields.
+
+LANGUAGE
+- If languageMode = "AUTO_FROM_INTAKE", match the intakeText’s language.
+- If "EN" or "FR", write strictly in that language (medical register).
+
+REFERENCING RULES
+- When using prior history, append anchors like [R1-1] or [R2-3], where numbers are 1-based positions in the arrays round1QA / round2QA.
+- For literature/guidelines, append compact citations at the end of bullets: [AHA/ACC Chest Pain Guideline, 2021, https://…] or [NICE NG12, 2023, https://…].
+
+OUTPUT FORMAT (STRICT JSON — THREE KEYS ONLY; ALL STRING VALUES)
+Return exactly one JSON object with ONLY these keys. No extra keys, no comments, no code fences.
+
+{
+  "diagnosis": string,          // e.g., "Non–ST-elevation myocardial infarction (NSTEMI)"
+  "justification": string,      // 5–12 bullets joined as lines starting with "- "
+  "steelman": string            // 3–8 bullets joined as lines starting with "- "
+}
+
+FORMAT NOTES FOR STRING FIELDS
+- For "justification": produce 5–12 bullets, each on its own line, each line starting with "- ".
+  Each bullet: concise claim → key positives/negatives → pathophysiologic rationale → anchors/citations.
+  Example line: "- Typical exertional chest pain with risk factors increases pretest probability; worsened over weeks. [R1-1,R2-2; AHA/ACC 2021, https://…]"
+- For "steelman": produce 3–8 strongest alternative explanations/failure modes with discriminators (tests/exams) and expected findings; include data gaps if present.
+  Example line: "- GERD can mimic chest discomfort; discriminator: pain reproducible with meals/PPIs; expected ECG/troponin normal. [R1-3]"
+
+CONSTRAINTS & STANDARDS
+- Exactly ONE leading hypothesis (choose the likeliest if tie); do NOT list a differential outside "steelman".
+- Use explicit pertinent negatives when they materially reduce probability.
+- Never invent clinical facts; if data are insufficient, state the minimal decisive next step within the relevant bullet.
+- Prefer recent guidelines/systematic reviews/consensus statements; include year and a working URL.
+
+VALIDATION CHECKLIST (MUST PASS BEFORE OUTPUT)
+- [ ] JSON is valid and has ONLY "diagnosis", "justification", "steelman".
+- [ ] "justification" has 5–12 "- " bullets (one per line) with ≥1 Q/A anchor and/or literature citation (with year + URL).
+- [ ] "steelman" has 3–8 "- " bullets (one per line) with concrete discriminators where relevant.
+- [ ] Language matches languageMode resolution.
+- [ ] No extraneous text, disclaimers, or keys.
+
+Explicitly forbid arrays for justification/steelman.
+Ban code fences and any extra text (triple-backticks, “Here is the JSON: …”, etc.).
+Bulleting must be newline-separated (not HTML <br>, not semicolons, not blank lines).
+Use ASCII hyphen “- ” at line start for bullets.
+No empty fields after trimming.
+No trailing commas / invalid JSON.
+Keep braces out of any surrounding text by forbidding surrounding text entirely.
+
+Double check output format one last time before generating your output. If it does not comply, repeat until it complies.
+`,
+   /* NEW: you author this */
+      CONSENSUS: `ROLE
+You are "PanelConsensusMetaSpecialist", a multidisciplinary meta-aggregator emulating a PANEL OF FIVE board-certified specialists. Your job is to run a structured argument among the specialists (internally) and deliver a consensus note for the TWO likeliest diagnoses with exhaustive justification and concrete next steps. The audience is physicians (not a patient).
+
+WHAT YOU WILL RECEIVE NEXT
+You will receive one message beginning with \`CONTEXT_JSON:\` containing EXACT keys:
+{
+"intakeText": string,
+"specialists": [ { "name": string, "why": string } ],
+"languageMode": "AUTO_FROM_INTAKE" | "EN" | "FR",
+"round1": { "<SpecialtyName>": [ { "q": string, "rationale": string, "answer": string } ] },
+"round2": { "<SpecialtyName>": [ { "q": string, "rationale": string, "answer": string } ] },
+"hypotheses": { // OPTIONAL: per-specialty submissions, keyed by specialty name
+"<SpecialtyName>": {
+"diagnosis": string,
+"justification": string[], // bullets
+"steelman": string[] // bullets
+}
+}
+}
+
+RIGOR MANDATE (MISSION-CRITICAL)
+
+FAILURE CANNOT BE TOLERATED. Think hard. Verify every statement. Use disciplined differential logic, explicit uncertainty, and likelihood shifters.
+
+Be thorough and information-dense. Prefer measurable findings, LR+/LR–, validated rules where relevant.
+
+Anchor claims to: (a) prior Q/A by specialty + index, (b) reputable guidelines/reviews (year + URL), and/or (c) the submitting specialist’s hypothesis.
+
+You deliberate internally as a panel; DO NOT output the debate transcript. Output only the consensus note.
+
+LANGUAGE
+
+If languageMode = "AUTO_FROM_INTAKE", match the intakeText’s language.
+
+If "EN" or "FR", write strictly in that language (medical register).
+
+ANCHORING FORMAT
+
+Round-1 anchor: [R1:Cardiology:3] means round1["Cardiology"][3].
+
+Round-2 anchor: [R2:Neurology:1] means round2["Neurology"][1].
+
+Specialist anchor: [SP:Cardiology] or [SP:#2] (if you must index).
+
+Literature/guidelines: append year + URL, e.g., [AHA/ACC 2021, https://…], [NICE NG12 2023, https://…].
+
+OUTPUT FORMAT (STRICT JSON — ONE KEY ONLY)
+Return exactly ONE JSON object with ONLY this key. No extra keys, no comments, no code fences.
+
+{
+"noteText": "..." // a single copy-ready physician note (markdown-like allowed)
+}
+
+REQUIRED NOTE SECTIONS (IN ORDER)
+
+Title line:
+
+“Consensus Panel — Two Likeliest Diagnoses”
+
+Diagnoses (ranked 1→2):
+
+<Concise, specific label>
+
+<Concise, specific label>
+
+Justification for Dx #1 (bulleted, granular):
+
+Include pertinent positives/negatives from Q/A with anchors, brief pathophysiology, likelihood shifts; resolve main counterpoints.
+
+Justification for Dx #2 (bulleted, granular):
+
+Same depth and anchoring discipline as Dx #1.
+
+Next Steps (prioritized, clinician-directed):
+
+Each item: action → purpose → discriminator/expected findings → effect on Dx#1 vs Dx#2; end each with ≥1 anchor (Q/A and/or literature with year + URL).
+
+Panel Provenance:
+
+List the contributing specialties (names), and whether each supported Dx#1, Dx#2, or dissented, referencing \`hypotheses\` if provided.
+
+CONSTRAINTS & VALIDATION
+
+Exactly TWO distinct diagnoses in the ranked list.
+
+Every justification bullet and next-step item ends with ≥1 valid anchor.
+
+Never invent clinical facts; if data are insufficient, state the minimal decisive next step inside the relevant bullet.
+
+Use guidelines/systematic reviews/consensus statements where relevant; include year + working URL.
+
+Language matches languageMode. No boilerplate beyond the required sections.
+
+BEGIN WHEN READY
+Wait for the next message beginning with \`CONTEXT_JSON:\`. Parse it and respond with exactly:
+{ "noteText": "<the complete consensus note as specified>" }.`
+                 /* you already planned to author this */
+    }
+  };
+
+  // (Optional convenience) inject NUM_SPECIALISTS into your PICK_SPECIALISTS prompt if you kept the same pattern
+  {
+    const N = (CFG && CFG.COUNTS && Number.isInteger(CFG.COUNTS.NUM_SPECIALISTS))
+      ? CFG.COUNTS.NUM_SPECIALISTS : 5;
+    if (typeof CFG.PROMPTS.PICK_SPECIALISTS === "string" && CFG.PROMPTS.PICK_SPECIALISTS.includes('"numSpecialists": number')) {
+      CFG.PROMPTS.PICK_SPECIALISTS = CFG.PROMPTS.PICK_SPECIALISTS.replace('"numSpecialists": number', `"numSpecialists": ${N}`);
+    }
+  }
+
+  /* ===========================
+     VALIDATION (runs once on load)
+     =========================== */
+
+  function validateConfig(cfg) {
+    const issues = [];
+    if (!cfg || typeof cfg !== "object") { issues.push("CFG is missing or not an object."); return issues; }
+
+    if (!cfg.PROXY_URL || typeof cfg.PROXY_URL !== "string") {
+      issues.push("PROXY_URL is missing or not a string.");
+    } else {
+      const looksLikeGAS = cfg.PROXY_URL.startsWith("https://script.google.com/macros/");
+      const endsWithExec = cfg.PROXY_URL.includes("/exec");
+      if (!looksLikeGAS || !endsWithExec) issues.push("PROXY_URL does not look like a Google Apps Script Web App /exec URL.");
+    }
+
+    const c = cfg.COUNTS || {};
+    if (!Number.isInteger(c.NUM_SPECIALISTS) || c.NUM_SPECIALISTS < 1) issues.push("COUNTS.NUM_SPECIALISTS must be an integer >= 1.");
+    if (!Number.isInteger(c.QUESTIONS_PER_SPECIALTY_ROUND1) || c.QUESTIONS_PER_SPECIALTY_ROUND1 < 1) issues.push("COUNTS.QUESTIONS_PER_SPECIALTY_ROUND1 must be an integer >= 1.");
+    if (!Number.isInteger(c.QUESTIONS_PER_SPECIALTY_ROUND2) || c.QUESTIONS_PER_SPECIALTY_ROUND2 < 1) issues.push("COUNTS.QUESTIONS_PER_SPECIALTY_ROUND2 must be an integer >= 1.");
+
+    const r = cfg.RUNTIME || {};
+    if (typeof r.SEQUENTIAL_MODE !== "boolean") issues.push("RUNTIME.SEQUENTIAL_MODE must be true/false.");
+    if (typeof r.RETRY_ONCE !== "boolean")      issues.push("RUNTIME.RETRY_ONCE must be true/false.");
+    if (!Number.isInteger(r.RETRY_DELAY_MS) || r.RETRY_DELAY_MS < 0) issues.push("RUNTIME.RETRY_DELAY_MS must be a non-negative integer (ms).");
+    if (!Number.isInteger(r.PER_CALL_TIMEOUT_MS) || r.PER_CALL_TIMEOUT_MS < 1000) issues.push("RUNTIME.PER_CALL_TIMEOUT_MS must be an integer >= 1000 (ms).");
+    if (typeof r.ALLOW_BLANK_ANSWERS_R1 !== "boolean") issues.push("RUNTIME.ALLOW_BLANK_ANSWERS_R1 must be true/false.");
+    if (typeof r.ALLOW_BLANK_ANSWERS_R2 !== "boolean") issues.push("RUNTIME.ALLOW_BLANK_ANSWERS_R2 must be true/false.");
+
+    const u = cfg.UI || {};
+    if (typeof u.SHOW_STATUS_PANEL !== "boolean") issues.push("UI.SHOW_STATUS_PANEL must be true/false.");
+    if (typeof u.CONFIRM_ON_CLEAR !== "boolean")  issues.push("UI.CONFIRM_ON_CLEAR must be true/false.");
+    if (typeof u.SHOW_COPY_NOTE_BUTTON !== "boolean") issues.push("UI.SHOW_COPY_NOTE_BUTTON must be true/false.");
+    if (typeof u.SHOW_HYPOTHESES_PANEL !== "boolean") issues.push("UI.SHOW_HYPOTHESES_PANEL must be true/false.");
+
+    const p = cfg.PROMPTS || {};
+    ["PICK_SPECIALISTS","ROUND1","ROUND2","DIAGNOSTIC_HYPOTHESIS","CONSENSUS"].forEach(key => {   /* NEW key included */
+      const val = p[key];
+      if (typeof val !== "string") {
+        issues.push(`PROMPTS.${key} must be a string (use backticks \`...\`).`);
+      } else if (!val.trim() && !DEV_ALLOW_EMPTY_PROMPTS) {
+        issues.push(`PROMPTS.${key} is empty. Paste your prompt.`);
+      }
+    });
+
+    return issues;
+  }
+
+  function deepFreeze(obj) {
+    if (!obj || typeof obj !== "object") return obj;
+    Object.getOwnPropertyNames(obj).forEach(name => {
+      const value = obj[name];
+      if (value && typeof value === "object") deepFreeze(value);
+    });
+    return Object.freeze(obj);
+  }
+
+  (function initConfig() {
+    const problems = validateConfig(CFG);
+    if (problems.length) {
+      const message = "CONFIG ISSUES:\n- " + problems.join("\n- ");
+      if (DEV_MODE) { alert(message); console.error(message); }
+      else { throw new Error(message); }
+    } else {
+      console.log("%cConfig OK", "color: green; font-weight: bold;");
+    }
+    deepFreeze(CFG);
+    window.__CFG = CFG; // Read-only
+  })();
+  </script>
+
+  <!-- =========================================================
+       APP LOGIC — rounds, hypotheses, consensus
+       ========================================================= -->
+  <script>
+  // ---------- DOM refs ----------
+  const intakeEl = document.getElementById('intakeText');
+  const pickBtn  = document.getElementById('btnPickSpecialists');
+  const statusEl = document.getElementById('statusBar');
+  const clearBtn = document.getElementById('btnClear');
+  const genR1Btn = document.getElementById('btnGenerateR1');
+  const genR2Btn = document.getElementById('btnGenerateR2');
+
+  const round1Container = document.getElementById('round1Container');
+  const round2Container = document.getElementById('round2Container');
+  const r1KpiEl = document.getElementById('r1Kpi');
+
+  // NEW — hypotheses + consensus DOM
+  const hypContainer = document.getElementById('hypothesesContainer');
+  const hypKpiEl     = document.getElementById('hypKpi');
+  const genHypBtn    = document.getElementById('btnGenerateHypotheses');
+
+  const genConBtn    = document.getElementById('btnGenerateConsensus');
+  const consensusNoteEl = document.getElementById('consensusNote');
+  const copyBtn      = document.getElementById('btnCopyNote');
+
+  // ---------- Session (memory-only) ----------
+  let session = makeEmptySession();
+  function makeEmptySession(){
+    return {
+      patient_intake: "",
+      specialists: [],            // [{name, why}]
+      round1: {},                 // { [specName]: [{q,rationale,answer}] }
+      round2: {},                 // { [specName]: [{q,rationale,answer}] }
+      hypotheses: {},             // NEW: { [specName]: { diagnosis, justification, steelman } }
+      consensus: { noteText: "" }
+    };
+  }
+
+  // ---------- Local UI state ----------
+  const __STATE = {
+    r1Locked: false,        // lock after Round-1 generation to avoid re-picking specialists
+    hypothesesRan: false    // NEW: becomes true after hypotheses loop finishes (success or not)
+  };
+
+  // Helpers
+  function setStatus(msg){ if(statusEl) statusEl.textContent = msg; }
+  function delay(ms){ return new Promise(res => setTimeout(res, ms)); }
+  function escapeHtml(s){
+    return String(s ?? "")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#39;");
+  }
+  async function withRetry(fn, retries){
+    let lastErr;
+    for (let attempt = 0; attempt <= retries; attempt++){
+      try { return await fn(); }
+      catch (err){
+        lastErr = err;
+        if (attempt < retries) await delay(__CFG.RUNTIME.RETRY_DELAY_MS);
+      }
+    }
+    throw lastErr;
+  }
+  async function callProxyWithTimeout(body, timeoutMs){
+    return await Promise.race([
+      callProxy(body),
+      new Promise((_, reject) => setTimeout(() => reject(new Error(`Timeout after ${timeoutMs} ms`)), timeoutMs))
+    ]);
+  }
+  function setRound1Lock(locked) {
+    __STATE.r1Locked = !!locked;
+    if (__STATE.r1Locked) {
+      genR1Btn.disabled = true;
+      genR1Btn.textContent = 'Round 1 Generated (locked)';
+      genR1Btn.title = 'Round-1 is locked to prevent overwriting. Use “Clear Session” to start over.';
+      pickBtn.disabled = true;
+      pickBtn.title = 'Locked after Round-1 generation. Clear Session to pick again.';
+    } else {
+      genR1Btn.textContent = 'Generate Round 1';
+      genR1Btn.title = '';
+      pickBtn.title = '';
+    }
+  }
+
+  // ---------- Busy guard ----------
+  let _busy = false;
+  function setBusy(isBusy, phaseLabel){
+    _busy = isBusy;
+    if (isBusy && phaseLabel) setStatus(`${phaseLabel}…`);
+    setButtonsState();
+    pickBtn.disabled = true; // avoid concurrent calls
+  }
+
+  // ---------- Validation visuals ----------
+  function setAnswerValidityClass(textareaEl, isValid) {
+    if (!textareaEl) return;
+    textareaEl.classList.remove('invalid','valid');
+    textareaEl.classList.add(isValid ? 'valid' : 'invalid');
+  }
+
+  // ---------- Round-1 progress helpers ----------
+  function getR1Totals() {
+    const perSpec = [];
+    let totalRequired = 0, answered = 0;
+    for (let idx = 0; idx < session.specialists.length; idx++) {
+      const specName = session.specialists[idx]?.name || '';
+      const arr = session.round1[specName];
+      if (!Array.isArray(arr) || arr.length === 0) {
+        perSpec.push({ idx, name: specName, total: 0, answered: 0 });
+        continue;
+      }
+      let specTotal = arr.length, specAnswered = 0;
+      for (const item of arr) if ((item?.answer || '').trim().length > 0) specAnswered++;
+      perSpec.push({ idx, name: specName, total: specTotal, answered: specAnswered });
+      totalRequired += specTotal; answered += specAnswered;
+    }
+    return { totalRequired, answered, perSpec };
+  }
+  function updateR1ProgressUI() {
+    const { totalRequired, answered, perSpec } = getR1Totals();
+    r1KpiEl.textContent = `${answered}/${totalRequired}`;
+    perSpec.forEach(({ idx, total, answered }) => {
+      const kpi = document.getElementById(`r1p-${idx}`);
+      if (kpi) kpi.textContent = `${answered}/${total}`;
+    });
+    const ready = areAllRequiredR1Answered();
+    genR2Btn.disabled = !ready || _busy;
+    if (ready) setStatus('Round-1 answers complete — you can generate Round-2.');
+  }
+  function areAllRequiredR1Answered(){
+    let hasAnyQuestions = false;
+    for (const spec of session.specialists){
+      const name = spec?.name || '';
+      const arr = session.round1[name];
+      if (!Array.isArray(arr) || arr.length === 0) continue;
+      hasAnyQuestions = true;
+      if (!__CFG.RUNTIME.ALLOW_BLANK_ANSWERS_R1){
+        for (const item of arr){ if ((item?.answer || '').trim().length === 0) return false; }
+      }
+    }
+    return hasAnyQuestions;
+  }
+  function highlightMissingR1Answers() {
+    if (__CFG.RUNTIME.ALLOW_BLANK_ANSWERS_R1) return;
+    for (let idx = 0; idx < session.specialists.length; idx++) {
+      const specName = session.specialists[idx]?.name || '';
+      const arr = session.round1[specName];
+      if (!Array.isArray(arr) || arr.length === 0) continue;
+      for (let qIdx = 0; qIdx < arr.length; qIdx++) {
+        const ta = document.getElementById(`r1a-${idx}-${qIdx}`);
+        if (!ta) continue;
+        const val = (ta.value || '').trim();
+        setAnswerValidityClass(ta, val.length > 0);
+      }
+    }
+  }
+  function findFirstMissingR1Answer() {
+    if (__CFG.RUNTIME.ALLOW_BLANK_ANSWERS_R1) return null;   // FIX: RUNTIME casing
+    for (let idx = 0; idx < session.specialists.length; idx++) {
+      const specName = session.specialists[idx]?.name || '';
+      const arr = session.round1[specName];
+      if (!Array.isArray(arr) || arr.length === 0) continue;
+      for (let qIdx = 0; qIdx < arr.length; qIdx++) {
+        const ta = document.getElementById(`r1a-${idx}-${qIdx}`);
+        if (!ta) continue;
+        if ((ta.value || '').trim().length === 0) return ta;
+      }
+    }
+    return null;
+  }
+
+  // ---------- Round-2 progress helpers ----------
+  function getR2Totals() {
+    const perSpec = [];
+    let totalRequired = 0, answered = 0;
+    for (let idx = 0; idx < session.specialists.length; idx++) {
+      const specName = session.specialists[idx]?.name || '';
+      const arr = session.round2[specName];
+      if (!Array.isArray(arr) || arr.length === 0) {
+        perSpec.push({ idx, name: specName, total: 0, answered: 0 });
+        continue;
+      }
+      let specTotal = arr.length, specAnswered = 0;
+      for (const item of arr) if ((item?.answer || '').trim().length > 0) specAnswered++;
+      perSpec.push({ idx, name: specName, total: specTotal, answered: specAnswered });
+      totalRequired += specTotal; answered += specAnswered;
+    }
+    return { totalRequired, answered, perSpec };
+  }
+  function updateR2ProgressUI() {
+    const { perSpec } = getR2Totals();
+    perSpec.forEach(({ idx, total, answered }) => {
+      const kpi = document.getElementById(`r2p-${idx}`);
+      if (kpi) kpi.textContent = `${answered}/${total}`;
+    });
+    const ready = areAllRequiredR2Answered();
+    genHypBtn.disabled = !ready || _busy;   // NEW: hypotheses gated on R2
+    if (ready) setStatus('Round-2 answers complete — you can generate Diagnostic Hypotheses.');
+  }
+  function areAllRequiredR2Answered() {
+    let hasAny = false;
+    for (const spec of session.specialists) {
+      const name = spec?.name || '';
+      const arr = session.round2[name];
+      if (!Array.isArray(arr) || arr.length === 0) continue;
+      hasAny = true;
+      if (!__CFG.RUNTIME.ALLOW_BLANK_ANSWERS_R2) {
+        for (const item of arr) if ((item?.answer || '').trim().length === 0) return false;
+      }
+    }
+    return hasAny;
+  }
+  function highlightMissingR2Answers() {
+    if (__CFG.RUNTIME.ALLOW_BLANK_ANSWERS_R2) return;
+    for (let idx = 0; idx < session.specialists.length; idx++) {
+      const specName = session.specialists[idx]?.name || '';
+      const arr = session.round2[specName];
+      if (!Array.isArray(arr) || arr.length === 0) continue;
+      for (let qIdx = 0; qIdx < arr.length; qIdx++) {
+        const ta = document.getElementById(`r2a-${idx}-${qIdx}`);
+        if (!ta) continue;
+        const val = (ta.value || '').trim();
+        setAnswerValidityClass(ta, val.length > 0);
+      }
+    }
+  }
+  function findFirstMissingR2Answer() {
+    if (__CFG.RUNTIME.ALLOW_BLANK_ANSWERS_R2) return null;  // FIX: RUNTIME casing
+    for (let idx = 0; idx < session.specialists.length; idx++) {
+      const specName = session.specialists[idx]?.name || '';
+      const arr = session.round2[specName];
+      if (!Array.isArray(arr) || arr.length === 0) continue;
+      for (let qIdx = 0; qIdx < arr.length; qIdx++) {
+        const ta = document.getElementById(`r2a-${idx}-${qIdx}`);
+        if (!ta) continue;
+        if ((ta.value || '').trim().length === 0) return ta;
+      }
+    }
+    return null;
+  }
+
+  // ---------- Buttons state (single source of truth) ----------
+  function setButtonsState() {
+    const hasIntake = (intakeEl.value || '').trim().length > 0;
+
+    // Intake gates picking (locked after R1)
+    pickBtn.disabled = __STATE.r1Locked ? true : (!hasIntake || _busy);
+
+    // Clear enabled if anything in session
+    clearBtn.disabled = !hasIntake && session.specialists.length === 0;
+
+    // Round-1 button enabled only after specialists picked, not busy, not locked
+    genR1Btn.disabled = (session.specialists.length === 0) || _busy || __STATE.r1Locked;
+
+    // Round-2 button depends on Round-1 gating + busy
+    genR2Btn.disabled = !areAllRequiredR1Answered() || _busy;
+
+    // Hypotheses button depends on Round-2 gating + busy
+    genHypBtn.disabled = !areAllRequiredR2Answered() || _busy;
+
+    // Consensus depends on hypotheses having been attempted + busy
+    genConBtn.disabled = !(__STATE.hypothesesRan && areAllRequiredR2Answered()) || _busy;
+
+    // Copy stays disabled until consensus exists
+    copyBtn.disabled = !(session.consensus && session.consensus.noteText && session.consensus.noteText.trim().length);
+    
+    // Keep KPIs honest
+    updateR1ProgressUI();
+    updateR2ProgressUI();
+    updateHypProgressUI();
+  }
+
+  // ---------- Intake typing gates buttons ----------
+  intakeEl.addEventListener('input', () => {
+    const hasText = (intakeEl.value || '').trim().length > 0;
+    pickBtn.disabled = __STATE.r1Locked ? true : (!hasText || _busy);
+    clearBtn.disabled = !hasText && session.specialists.length === 0;
+    setStatus(hasText ? 'Ready • Intake captured' : 'Ready • Waiting for intake');
+  });
+
+  // ---------- Render helpers: Picked Specialties, Round-1, Round-2 ----------
+  function renderPickedSpecialties(list){
+    round1Container.innerHTML = "";
+    if (!Array.isArray(list) || !list.length){
+      round1Container.innerHTML = '<div class="placeholder">No specialists returned. You can try again.</div>';
+      return;
+    }
+    list.forEach((spec, idx) => {
+      const letter = String.fromCharCode(65 + idx);
+      const card = document.createElement('div');
+      card.className = 'qs-card';
+      card.id = `spec-${idx}`;
+      card.innerHTML = `
+        <div class="q">
+          ${letter}. ${escapeHtml(spec.name || 'Unnamed specialty')}
+          <span class="pill-kpi" id="r1p-${idx}" style="margin-left:8px;">0/0</span>
+        </div>
+        <div class="rationale"><span class="muted">Why:</span> ${escapeHtml(spec.why || '')}</div>
+        <div id="r1-${idx}" class="grid-qs">
+          <div class="placeholder">Round-1 questions for ${escapeHtml(spec.name || 'this specialty')} will load here.</div>
+        </div>
+      `;
+      round1Container.appendChild(card);
+    });
+    updateR1ProgressUI();
+  }
+
+  function buildPriorQuestions(currentIdx){
+    const prior = [];
+    for (let i = 0; i < currentIdx; i++){
+      const specName = session.specialists[i]?.name || '';
+      const arr = session.round1[specName];
+      if (Array.isArray(arr) && arr.length){
+        for (const item of arr){
+          if (item && item.q) prior.push({ specialist: specName, q: item.q });
+        }
+      }
+    }
+    return prior;
+  }
+
+  function renderR1Questions(idx, specName, qArray){
+    const container = document.getElementById(`r1-${idx}`);
+    if (!container) return;
+    if (!Array.isArray(qArray) || !qArray.length){
+      container.innerHTML = `<div class="placeholder">No questions returned for ${escapeHtml(specName)}.</div>`;
+      updateR1ProgressUI();
+      return;
+    }
+    const parts = [];
+    qArray.forEach((item, qIdx) => {
+      const q = escapeHtml(item.q || '');
+      const r = escapeHtml(item.rationale || '');
+      const taId = `r1a-${idx}-${qIdx}`;
+      parts.push(`
+        <div class="qs-card">
+          <div class="q">${q}</div>
+          <div class="rationale">${r ? `Rationale: ${r}` : ''}</div>
+          <textarea id="${taId}" placeholder="Doctor’s answer…"></textarea>
+        </div>
+      `);
+    });
+    container.innerHTML = parts.join("");
+    qArray.forEach((_, qIdx) => {
+      const ta = document.getElementById(`r1a-${idx}-${qIdx}`);
+      if (!ta) return;
+      if (!__CFG.RUNTIME.ALLOW_BLANK_ANSWERS_R1) setAnswerValidityClass(ta, false);
+      ta.addEventListener('input', () => {
+        const val = (ta.value || '');
+        const arr = session.round1[specName];
+        if (Array.isArray(arr) && arr[qIdx]) arr[qIdx].answer = val;
+        const ok = (val.trim().length > 0) || __CFG.RUNTIME.ALLOW_BLANK_ANSWERS_R1;
+        if (!__CFG.RUNTIME.ALLOW_BLANK_ANSWERS_R1) setAnswerValidityClass(ta, ok);
+        updateR1ProgressUI();
+      });
+    });
+    updateR1ProgressUI();
+  }
+
+  function renderR1Unavailable(idx, specName, reasonText){
+    const container = document.getElementById(`r1-${idx}`);
+    if (!container) return;
+    container.innerHTML = `
+      <div class="placeholder">
+        <span class="tag-bad">Round-1 unavailable</span> for ${escapeHtml(specName)} — ${escapeHtml(reasonText || '2 attempts failed')}.
+        You may proceed with other specialties.
+      </div>`;
+    updateR1ProgressUI();
+  }
+
+  // ---------- Round-2 rendering ----------
+  function buildPriorRound2Questions(currentIdx) {
+    const prior = [];
+    for (let i = 0; i < currentIdx; i++) {
+      const specName = session.specialists[i]?.name || '';
+      const arr = session.round2[specName];
+      if (!Array.isArray(arr) || !arr.length) continue;
+      for (const item of arr) if (item && item.q) prior.push({ specialist: specName, q: item.q });
+    }
+    return prior;
+  }
+  function renderR2Questions(specIdx, specName, qArray) {
+    let card = document.getElementById(`r2-s-${specIdx}`);
+    if (!card) {
+      card = document.createElement('div');
+      card.className = 'qs-card';
+      card.id = `r2-s-${specIdx}`;
+      round2Container.appendChild(card);
+    }
+    const letter = String.fromCharCode(65 + specIdx);
+    const itemsHtml = (qArray || []).map((item, qIdx) => {
+      const q = escapeHtml(item.q || '');
+      const r = escapeHtml(item.rationale || '');
+      const taId = `r2a-${specIdx}-${qIdx}`;
+      return `
+        <div class="qs-card" style="margin-top:10px;">
+          <div class="q">${q}</div>
+          <div class="rationale">${r ? `Rationale: ${r}` : ''}</div>
+          <textarea id="${taId}" placeholder="Doctor’s answer…"></textarea>
+        </div>
+      `;
+    }).join('');
+    card.innerHTML = `
+      <div class="q">${letter}. ${escapeHtml(specName)} — Round-2 Follow-ups
+        <span class="pill-kpi" id="r2p-${specIdx}" style="margin-left:8px;">0/${qArray?.length || 0}</span>
+      </div>
+      <div class="rationale"><span class="muted">Sharper follow-ups based on Round-1 answers. No repeats.</span></div>
+      <div id="r2-grid-${specIdx}" class="grid-qs">
+        ${itemsHtml || `<div class="placeholder">No Round-2 questions returned for ${escapeHtml(specName)}.</div>`}
+      </div>
+    `;
+    (qArray || []).forEach((_, qIdx) => {
+      const ta = document.getElementById(`r2a-${specIdx}-${qIdx}`);
+      if (!ta) return;
+      if (!__CFG.RUNTIME.ALLOW_BLANK_ANSWERS_R2) setAnswerValidityClass(ta, false);
+      ta.addEventListener('input', () => {
+        const val = (ta.value || '');
+        const arr = session.round2[specName];
+        if (Array.isArray(arr) && arr[qIdx]) arr[qIdx].answer = val;
+        const ok = (val.trim().length > 0) || __CFG.RUNTIME.ALLOW_BLANK_ANSWERS_R2;
+        if (!__CFG.RUNTIME.ALLOW_BLANK_ANSWERS_R2) setAnswerValidityClass(ta, ok);
+        updateR2ProgressUI();
+      });
+    });
+    const firstEmpty = card.querySelector('textarea'); if (firstEmpty) firstEmpty.focus({ preventScroll: false });
+    updateR2ProgressUI();
+  }
+  function renderR2Unavailable(specIdx, specName, reasonText) {
+    let card = document.getElementById(`r2-s-${specIdx}`);
+    if (!card) {
+      card = document.createElement('div');
+      card.className = 'qs-card';
+      card.id = `r2-s-${specIdx}`;
+      round2Container.appendChild(card);
+    }
+    card.innerHTML = `
+      <div class="q">${String.fromCharCode(65 + specIdx)}. ${escapeHtml(specName)} — Round-2 Unavailable</div>
+      <div class="placeholder">
+        <span class="tag-bad">Round-2 unavailable</span> for ${escapeHtml(specName)} — ${escapeHtml(reasonText || '2 attempts failed')}.
+        You may proceed with other specialties.
+      </div>
+    `;
+    updateR2ProgressUI();
+  }
+
+  // ---------- Hypotheses rendering & progress (NEW) ----------
+  function updateHypProgressUI() {
+    const total = session.specialists.length || 0;
+    let processed = 0;
+    if (hypContainer) {
+      const cards = hypContainer.querySelectorAll('[id^="hyp-s-"]');
+      cards.forEach(el => {
+        const st = el.getAttribute('data-state');
+        if (st === 'done' || st === 'unavailable') processed++;
+      });
+    }
+    if (hypKpiEl) hypKpiEl.textContent = `${processed}/${total}`;
+  }
+  function renderHypothesisPending(specIdx, specName) {
+    const card = ensureHypCard(specIdx, specName, `
+      <div class="placeholder">Generating diagnostic hypothesis…</div>
+    `);
+    if (card) card.setAttribute('data-state','pending');
+    updateHypProgressUI();
+  }
+  function renderHypothesisUnavailable(specIdx, specName, reasonText) {
+    const card = ensureHypCard(specIdx, specName, `
+      <div class="placeholder"><span class="tag-bad">Unavailable</span> — ${escapeHtml(reasonText || '2 attempts failed')}</div>
+    `);
+    if (card) card.setAttribute('data-state','unavailable');
+    updateHypProgressUI();
+  }
+  function renderHypothesis(specIdx, specName, obj) {
+    const body = `
+      <div class="q">Diagnosis</div>
+      <div class="rationale">${escapeHtml(obj.diagnosis || '')}</div>
+      <div class="q" style="margin-top:8px;">Justification</div>
+      <div class="rationale prewrap">${escapeHtml(obj.justification || '')}</div>
+      <div class="q" style="margin-top:8px;">Steelman against</div>
+      <div class="rationale prewrap">${escapeHtml(obj.steelman || '')}</div>
+    `;
+    const card = ensureHypCard(specIdx, specName, body);
+    if (card) card.setAttribute('data-state','done');
+    updateHypProgressUI();
+  }
+  function ensureHypCard(specIdx, specName, innerHtml) {
+    let card = document.getElementById(`hyp-s-${specIdx}`);
+    if (!card) {
+      card = document.createElement('div');
+      card.className = 'qs-card';
+      card.id = `hyp-s-${specIdx}`;
+      hypContainer.appendChild(card);
+    }
+    const letter = String.fromCharCode(65 + specIdx);
+    card.innerHTML = `
+      <div class="q">${letter}. ${escapeHtml(specName)} — Hypothesis</div>
+      ${innerHtml}
+    `;
+    return card;
+  }
+
+  // ---------- Clear Session ----------
+  clearBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (__CFG.UI.CONFIRM_ON_CLEAR) {
+      const ok = confirm("Clear the current session? This cannot be undone.");
+      if (!ok) return;
+    }
+    session = makeEmptySession();
+    setRound1Lock(false);
+    __STATE.hypothesesRan = false;
+
+    intakeEl.value = "";
+    round1Container.innerHTML = '<div class="placeholder">Specialty sections (A…E) will render here. Each will show questions with one simple text box per question.</div>';
+    round2Container.innerHTML = `
+      <div class="qs-card">
+        <div class="q">[Example] Cardiology — Follow-up Q1 will appear here</div>
+        <div class="rationale">Rationale: rule-in/rule-out specifics (example)</div>
+        <textarea disabled placeholder="Doctor’s answer goes here (example)"></textarea>
+      </div>`;
+    hypContainer.innerHTML = '<div class="placeholder">After Round-2 answers are complete, click “Generate Hypotheses”.</div>';
+    consensusNoteEl.textContent = '[Consensus note will render here]';
+    r1KpiEl.textContent = '0/0';
+    if (hypKpiEl) hypKpiEl.textContent = '0/0';
+
+    setStatus('Ready • Session cleared');
+
+    genR1Btn.disabled = true;
+    genR2Btn.disabled = true;
+    genHypBtn.disabled = true;
+    genConBtn.disabled = true;
+    copyBtn.disabled = true;
+    pickBtn.disabled = true;
+    clearBtn.disabled = true;
+  });
+
+  // ---------- Pick Specialists (2.1) ----------
+  pickBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    if (__STATE.r1Locked) { setStatus('Round-1 is locked. Clear Session to pick specialists again.'); return; }
+    const intake = (intakeEl.value || '').trim();
+    if (!intake){ setStatus('Please paste the patient story first.'); return; }
+
+    if (!__CFG.PROMPTS.PICK_SPECIALISTS || !__CFG.PROMPTS.PICK_SPECIALISTS.trim()){
+      alert('Please paste your PICK_SPECIALISTS prompt into CFG.PROMPTS.PICK_SPECIALISTS before running.');
+      return;
+    }
+
+    setBusy(true, 'Picking specialists');
+
+    const body = {
+      role: "pick_specialists",
+      payload: {
+        prompt: __CFG.PROMPTS.PICK_SPECIALISTS,
+        context: {
+          intakeText: intake,
+          numSpecialists: __CFG.COUNTS.NUM_SPECIALISTS,
+          languageMode: __CFG.LANGUAGE_MODE
+        }
+      }
+    };
+
+    try {
+      const data = await withRetry(
+        () => callProxyWithTimeout(body, __CFG.RUNTIME.PER_CALL_TIMEOUT_MS),
+        __CFG.RUNTIME.RETRY_ONCE ? 1 : 0
+      );
+
+      if (!Array.isArray(data) || !data.length){
+        throw new Error('Proxy returned an empty list. Adjust your prompt to return an array of { name, why }.');
+      }
+
+      session.patient_intake = intake;
+      session.specialists = data.slice(0, __CFG.COUNTS.NUM_SPECIALISTS);
+      renderPickedSpecialties(session.specialists);
+
+      setStatus(`Picked ${session.specialists.length} specialists. You can now Generate Round-1.`);
+      genR1Btn.disabled = false;
+      clearBtn.disabled = false;
+    } catch (err) {
+      setStatus(`Pick specialists failed: ${String(err && err.message ? err.message : err)}. You can try again.`);
+      console.error(err);
+    } finally { setBusy(false, ''); }
+  });
+
+  // ---------- Round-1 Generation (2.2) ----------
+  genR1Btn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    if (__STATE.r1Locked) { setStatus('Round-1 is locked. Clear Session to run it again.'); return; }
+    if (!__CFG.PROMPTS.ROUND1 || !__CFG.PROMPTS.ROUND1.trim()){
+      alert('Please paste your ROUND1 prompt into CFG.PROMPTS.ROUND1 before running.'); return;
+    }
+    if (!Array.isArray(session.specialists) || session.specialists.length === 0){
+      alert('No specialists available. Run "Pick Specialists" first.'); return;
+    }
+
+    setBusy(true, 'Generating Round-1');
+
+    const total = session.specialists.length;
+    let generatedAny = false;
+
+    for (let idx = 0; idx < total; idx++){
+      const specName = session.specialists[idx]?.name || '';
+      if (!specName){ continue; }
+
+      const priorQuestions = buildPriorQuestions(idx);
+      const container = document.getElementById(`r1-${idx}`);
+      if (container) container.innerHTML = `<div class="placeholder">Generating Round-1 for ${escapeHtml(specName)}…</div>`;
+
+      const payload = {
+        role: "round1_questions",
+        payload: {
+          questionsPerSpecialty: __CFG.COUNTS.QUESTIONS_PER_SPECIALTY_ROUND1,
+          specialistName: specName,
+          languageMode: __CFG.LANGUAGE_MODE,
+          prompt: __CFG.PROMPTS.ROUND1,
+          context: {
+            intakeText: session.patient_intake,
+            specialist: specName,
+            numQuestions: __CFG.COUNTS.QUESTIONS_PER_SPECIALTY_ROUND1,
+            languageMode: __CFG.LANGUAGE_MODE,
+            priorQuestions: priorQuestions
+          }
+        }
+      };
+
+      try {
+        const data = await withRetry(
+          () => callProxyWithTimeout(payload, __CFG.RUNTIME.PER_CALL_TIMEOUT_MS),
+          __CFG.RUNTIME.RETRY_ONCE ? 1 : 0
+        );
+        if (!Array.isArray(data) || !data.length){
+          throw new Error('Empty or invalid questions array. Ensure your prompt returns [{ "q": "...", "rationale": "..." }].');
+        }
+        const arr = data.map(item => ({ q: String(item.q||''), rationale: String(item.rationale||''), answer: "" }));
+        session.round1[specName] = arr;
+        renderR1Questions(idx, specName, arr);
+        generatedAny = true;
+        setStatus(`Round-1: ${specName} (${idx+1}/${total}) completed.`);
+      } catch (err) {
+        console.error(err);
+        session.round1[specName] = []; 
+        renderR1Unavailable(idx, specName, (err && err.message) || 'failed');
+        setStatus(`Round-1: ${specName} failed after retry. Continuing…`);
+      }
+    }
+
+    setStatus('Round-1 complete.');
+    setBusy(false, '');
+    if (generatedAny) setRound1Lock(true);
+    setButtonsState();
+  });
+
+  // ---------- Round-2 Generation (2.4) ----------
+  const r2BtnEl = document.getElementById('btnGenerateR2');
+  if (r2BtnEl) {
+    r2BtnEl.addEventListener('click', async (e) => {
+      e.preventDefault();
+      if (r2BtnEl.disabled) {
+        highlightMissingR1Answers();
+        const first = findFirstMissingR1Answer();
+        if (first) { setStatus('Round-1 answers incomplete — fill highlighted fields to proceed.'); first.scrollIntoView({behavior:'smooth',block:'center'}); first.focus({preventScroll:true}); }
+        else alert('Round-1 answers are not complete yet.');
+        return;
+      }
+      if (!__CFG.PROMPTS.ROUND2 || !__CFG.PROMPTS.ROUND2.trim()) { alert('Please paste your ROUND2 prompt into CFG.PROMPTS.ROUND2 before running.'); return; }
+      if (!Array.isArray(session.specialists) || session.specialists.length === 0) { alert('No specialists available.'); return; }
+
+      round2Container.innerHTML = '';
+      setBusy(true, 'Generating Round-2');
+
+      try {
+        const total = session.specialists.length;
+        for (let idx = 0; idx < total; idx++) {
+          const specName = session.specialists[idx]?.name || '';
+          if (!specName) continue;
+          const r1Array = Array.isArray(session.round1[specName]) ? session.round1[specName] : [];
+          const priorR2Qs = buildPriorRound2Questions(idx);
+
+          let pendingCard = document.getElementById(`r2-s-${idx}`);
+          if (!pendingCard) {
+            pendingCard = document.createElement('div');
+            pendingCard.className = 'qs-card';
+            pendingCard.id = `r2-s-${idx}`;
+            pendingCard.innerHTML = `
+              <div class="q">${String.fromCharCode(65 + idx)}. ${escapeHtml(specName)} — Generating Round-2…</div>
+              <div class="placeholder">Please wait…</div>
+            `;
+            round2Container.appendChild(pendingCard);
+          } else {
+            pendingCard.innerHTML = `
+              <div class="q">${String.fromCharCode(65 + idx)}. ${escapeHtml(specName)} — Generating Round-2…</div>
+              <div class="placeholder">Please wait…</div>
+            `;
+          }
+
+          const body = {
+            role: "round2_questions",
+            payload: {
+              prompt: __CFG.PROMPTS.ROUND2,
+              questionsPerSpecialty: __CFG.COUNTS.QUESTIONS_PER_SPECIALTY_ROUND2,
+              specialistName: specName,
+              languageMode: __CFG.LANGUAGE_MODE,
+              context: {
+                intakeText: session.patient_intake,
+                specialistName: specName,
+                questionsPerSpecialty: __CFG.COUNTS.QUESTIONS_PER_SPECIALTY_ROUND2,
+                languageMode: __CFG.LANGUAGE_MODE,
+                round1QA: r1Array.map(({ q, rationale, answer }) => ({ q, rationale, answer })),
+                priorRound2Questions: priorR2Qs
+              }
+            }
+          };
+
+          try {
+            const data = await withRetry(
+              () => callProxyWithTimeout(body, __CFG.RUNTIME.PER_CALL_TIMEOUT_MS),
+              __CFG.RUNTIME.RETRY_ONCE ? 1 : 0
+            );
+            if (!Array.isArray(data) || !data.length) throw new Error('Empty or invalid follow-up array.');
+            session.round2[specName] = data.map(item => ({ q: String(item.q || ''), rationale: String(item.rationale || ''), answer: "" }));
+            renderR2Questions(idx, specName, session.round2[specName]);
+            setStatus(`Round-2: ${specName} (${idx + 1}/${total}) completed.`);
+          } catch (errSpec) {
+            console.error(errSpec);
+            session.round2[specName] = []; 
+            renderR2Unavailable(idx, specName, (errSpec && errSpec.message) || 'failed');
+            setStatus(`Round-2: ${specName} failed after retry. Continuing…`);
+          }
+        }
+
+        const anyR2 = Object.values(session.round2).some(arr => Array.isArray(arr) && arr.length > 0);
+        if (anyR2) setStatus('Round-2 complete. You can now generate Diagnostic Hypotheses.');
+        else setStatus('Round-2 finished with no follow-ups. You may adjust prompts or counts and retry.');
+      } finally {
+        setBusy(false, '');
+        setButtonsState();
+      }
+    });
+  }
+
+  // ---------- Diagnostic Hypotheses (NEW) ----------
+  if (genHypBtn) {
+    genHypBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+
+      if (genHypBtn.disabled) {
+        highlightMissingR2Answers();
+        const first = findFirstMissingR2Answer();
+        if (first) { setStatus('Round-2 answers incomplete — fill highlighted fields to proceed.'); first.scrollIntoView({behavior:'smooth',block:'center'}); first.focus({preventScroll:true}); }
+        else alert('Round-2 answers are not complete yet.');
+        return;
+      }
+      if (!__CFG.PROMPTS.DIAGNOSTIC_HYPOTHESIS || !__CFG.PROMPTS.DIAGNOSTIC_HYPOTHESIS.trim()) {
+        alert('Please paste your DIAGNOSTIC_HYPOTHESIS prompt into CFG.PROMPTS.DIAGNOSTIC_HYPOTHESIS.');
+        return;
+      }
+
+      // Prepare the panel
+      hypContainer.innerHTML = '';
+      __STATE.hypothesesRan = false;
+      session.hypotheses = {};
+
+      setBusy(true, 'Generating Diagnostic Hypotheses');
+
+      try {
+        const total = session.specialists.length;
+        for (let idx = 0; idx < total; idx++) {
+          const specName = session.specialists[idx]?.name || '';
+          if (!specName) continue;
+
+          renderHypothesisPending(idx, specName);
+
+          const r1Array = Array.isArray(session.round1[specName]) ? session.round1[specName] : [];
+          const r2Array = Array.isArray(session.round2[specName]) ? session.round2[specName] : [];
+
+          const body = {
+            role: "diagnostic_hypothesis",
+            payload: {
+              prompt: __CFG.PROMPTS.DIAGNOSTIC_HYPOTHESIS,
+              context: {
+                intakeText: session.patient_intake,
+                specialistName: specName,
+                languageMode: __CFG.LANGUAGE_MODE,
+                round1QA: r1Array.map(({ q, rationale, answer }) => ({ q, rationale, answer })),
+                round2QA: r2Array.map(({ q, rationale, answer }) => ({ q, rationale, answer }))
+              }
+            }
+          };
+
+          try {
+            const data = await withRetry(
+              () => callProxyWithTimeout(body, __CFG.RUNTIME.PER_CALL_TIMEOUT_MS),
+              __CFG.RUNTIME.RETRY_ONCE ? 1 : 0
+            );
+            if (!data || typeof data !== "object") throw new Error('Empty/invalid hypothesis object.');
+            const { diagnosis, justification, steelman } = data;
+            if (typeof diagnosis !== 'string' || typeof justification !== 'string' || typeof steelman !== 'string') {
+              throw new Error('Expected { diagnosis, justification, steelman } as strings.');
+            }
+            session.hypotheses[specName] = { diagnosis, justification, steelman };
+            renderHypothesis(idx, specName, session.hypotheses[specName]);
+            setStatus(`Hypothesis: ${specName} (${idx + 1}/${total}) completed.`);
+          } catch (errSpec) {
+            console.error(errSpec);
+            renderHypothesisUnavailable(idx, specName, (errSpec && errSpec.message) || 'failed');
+            setStatus(`Hypothesis: ${specName} failed after retry. Continuing…`);
+          }
+        }
+
+        __STATE.hypothesesRan = true;
+        setStatus('Hypotheses complete. You can now generate the consensus note.');
+      } finally {
+        setBusy(false, '');
+        setButtonsState();
+      }
+    });
+  }
+
+  // ---------- Consensus (2.6) — now includes hypotheses ----------
+  genConBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+
+    if (genConBtn.disabled) {
+      if (!__STATE.hypothesesRan) {
+        alert('Please run “Generate Hypotheses” first.');
+        return;
+      }
+      highlightMissingR2Answers();
+      const first = findFirstMissingR2Answer();
+      if (first) { setStatus('Round-2 answers incomplete — fill highlighted fields to proceed.'); first.scrollIntoView({behavior:'smooth',block:'center'}); first.focus({preventScroll:true}); }
+      return;
+    }
+
+    if (!__CFG.PROMPTS.CONSENSUS || !__CFG.PROMPTS.CONSENSUS.trim()) {
+      alert('Please paste your CONSENSUS prompt into CFG.PROMPTS.CONSENSUS before running.');
+      return;
+    }
+
+    setBusy(true, 'Generating Consensus');
+
+    // Transform hypotheses (strings -> string[]), as the CONSENSUS prompt expects arrays
+    function stringToBulletsArray(s) {
+      return String(s || '')
+        .split('\n')
+        .map(line => line.trim().replace(/^-+\s*/, ''))
+        .filter(Boolean);
+    }
+
+    const ctxHypotheses = {};
+    for (const spec of session.specialists) {
+      const name = spec?.name || '';
+      if (!name) continue;
+      if (session.hypotheses[name]) {
+        const h = session.hypotheses[name];
+        ctxHypotheses[name] = {
+          diagnosis: String(h.diagnosis || ''),
+          justification: stringToBulletsArray(h.justification),
+          steelman: stringToBulletsArray(h.steelman)
+        };
+      }
+    }
+
+    const body = {
+      role: "consensus",
+      payload: {
+        prompt: __CFG.PROMPTS.CONSENSUS,
+        context: {
+          intakeText: session.patient_intake,
+          specialists: session.specialists,
+          round1: session.round1,
+          round2: session.round2,
+          hypotheses: ctxHypotheses,                 // arrays now aligned with prompt schema
+          languageMode: __CFG.LANGUAGE_MODE
+        }
+      }
+    };
+
+    try {
+      const data = await withRetry(
+        () => callProxyWithTimeout(body, __CFG.RUNTIME.PER_CALL_TIMEOUT_MS),
+        __CFG.RUNTIME.RETRY_ONCE ? 1 : 0
+      );
+
+      const note = (data && typeof data.noteText === 'string') ? data.noteText : '';
+      if (!note.trim()) throw new Error('Consensus returned empty text. Adjust prompt or retry.');
+      session.consensus.noteText = note;
+      consensusNoteEl.textContent = note;
+      copyBtn.disabled = false;
+      setStatus('Consensus ready. You can copy the note.');
+    } catch (err) {
+      console.error(err);
+      setStatus(`Consensus failed: ${String(err && err.message ? err.message : err)}. You can try again.`);
+    } finally {
+      setBusy(false, '');
+      setButtonsState();
+    }
+  });
+
+  // ---------- Copy note ----------
+  copyBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const text = session.consensus && session.consensus.noteText ? session.consensus.noteText : '';
+    if (!text.trim()) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      setStatus('Consensus copied to clipboard.');
+    } catch {
+      // Fallback: select + copy (best-effort)
+      const sel = window.getSelection();
+      const range = document.createRange();
+      range.selectNodeContents(consensusNoteEl);
+      sel.removeAllRanges(); sel.addRange(range);
+      document.execCommand('copy');
+      sel.removeAllRanges();
+      setStatus('Consensus copied to clipboard (fallback).');
+    }
+  });
+
+  // ---------- Initial state ----------
+  const __CFG = window.__CFG;
+  setRound1Lock(false);
+  pickBtn.disabled  = true;
+  clearBtn.disabled = true;
+  genR1Btn.disabled = true;
+  genR2Btn.disabled = true;
+  genHypBtn.disabled= true;
+  genConBtn.disabled= true;
+  copyBtn.disabled  = true;
+  r1KpiEl.textContent = '0/0';
+  if (hypKpiEl) hypKpiEl.textContent = '0/0';
+  setStatus('Ready • Waiting for intake');
+  </script>
+
+</body>
+</html>
