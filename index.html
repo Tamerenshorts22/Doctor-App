@@ -29,15 +29,33 @@
       line-height:1.45;
     }
 
+    /* ===== Top bar (centered) ===== */
     .topbar{
       position:sticky; top:0; z-index:10;
       background:linear-gradient(180deg, #151922, #121725);
       border-bottom:1px solid var(--border);
-      padding:14px 16px;
-      display:flex; gap:16px; align-items:center; flex-wrap:wrap;
+      padding:18px 16px;
+      box-shadow:0 2px 18px rgba(0,0,0,0.25);
     }
-    .topbar h1{font-size:18px; margin:0; font-weight:700; letter-spacing:.2px}
-    .spacer{flex:1}
+    .tb-grid{
+      display:grid;
+      grid-template-columns: 1fr minmax(0, 760px) auto;
+      align-items:center;
+      gap:12px;
+    }
+    .tb-center{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      text-align:center;
+    }
+    .topbar h1{font-size:24px; margin:0 0 6px 0; font-weight:800; letter-spacing:.2px}
+    .tb-right{ display:flex; gap:8px; align-items:center; justify-content:flex-end; }
+    .status{
+      font-size:12px; color:var(--muted);
+      padding:4px 8px; border:1px dashed var(--border); border-radius:8px;
+    }
+
     .btn{
       display:inline-flex; align-items:center; justify-content:center;
       gap:8px; padding:8px 12px; border-radius:10px;
@@ -48,17 +66,27 @@
     .btn:hover:not([disabled]){transform:translateY(-1px)}
     .btn-clear{background:#161b28}
     .btn-copy{background:#141c2a}
-    .status{
-      font-size:12px; color:var(--muted);
-      padding:4px 8px; border:1px dashed var(--border); border-radius:8px;
-    }
 
+    .pill{
+      display:inline-block; padding:4px 8px; border-radius:999px;
+      background:#13192a; border:1px solid var(--border); color:var(--muted); font-size:12px;
+    }
+    .pill-kpi{
+      display:inline-block; padding:2px 8px; border-radius:999px;
+      background:#101626; border:1px solid var(--border); color:#c8d3eb; font-size:11px;
+    }
+    .muted{color:var(--muted)}
+
+    /* ===== 4-column main grid ===== */
     .container{
       padding:16px;
-      display:grid; grid-template-columns: 1fr 1fr 1fr; gap:16px;
+      display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:16px;
     }
-    @media (max-width:1200px){
-      .container{grid-template-columns:1fr; }
+    @media (max-width:1360px){
+      .container{ grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width:900px){
+      .container{ grid-template-columns: 1fr; }
     }
 
     .card{
@@ -79,15 +107,6 @@
     }
     textarea{min-height:180px; resize:vertical}
     .row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
-    .muted{color:var(--muted)}
-    .pill{
-      display:inline-block; padding:4px 8px; border-radius:999px;
-      background:#13192a; border:1px solid var(--border); color:var(--muted); font-size:12px;
-    }
-    .pill-kpi{
-      display:inline-block; padding:2px 8px; border-radius:999px;
-      background:#101626; border:1px solid var(--border); color:#c8d3eb; font-size:11px;
-    }
     .placeholder{
       padding:10px 12px; border-radius:10px; background:#101626; border:1px dashed var(--border); color:var(--muted); font-size:13px;
     }
@@ -117,25 +136,31 @@
     .invalid{ border-color: var(--warn) !important; }
     .valid{ border-color: rgba(34,197,94,0.35) !important; } /* soft green */
 
-    /* NEW: preserve line breaks for multi-line hypothesis text */
+    /* Preserve line breaks for multi-line hypothesis text */
     .prewrap{ white-space: pre-wrap; }
   </style>
 </head>
 
 <body>
 
-  <!-- ===== Top bar ===== -->
+  <!-- ===== Top bar (centered content, actions on right) ===== -->
   <header class="topbar">
-    <h1>Doctor Consult Orchestrator — UI Skeleton</h1>
-    <span class="pill">v1 • memory-only</span>
-    <div class="spacer"></div>
-    <button class="btn btn-clear" id="btnClear" disabled>Clear Session</button>
-    <span class="status" id="statusBar">Ready • Waiting for intake</span>
+    <div class="tb-grid">
+      <div></div>
+      <div class="tb-center">
+        <h1>Doctor Consult Orchestrator — UI Skeleton</h1>
+        <span class="status" id="statusBar" aria-live="polite">Ready • Waiting for intake</span>
+      </div>
+      <div class="tb-right">
+        <span class="pill">v1 • memory-only</span>
+        <button class="btn btn-clear" id="btnClear" disabled>Clear Session</button>
+      </div>
+    </div>
   </header>
 
-  <!-- ===== Three-column layout ===== -->
+  <!-- ===== Four-column layout ===== -->
   <main class="container">
-    <!-- LEFT: Intake -->
+    <!-- COLUMN 1: Intake & Picks -->
     <section class="card stack-12" id="col-intake">
       <div class="section-title">
         <h2 class="col-title">Intake</h2>
@@ -149,10 +174,19 @@
         <button class="btn" id="btnPickSpecialists" disabled>Pick Specialists</button>
         <span class="muted">Default: 5 specialists (you control counts in Config).</span>
       </div>
-      <div class="placeholder">After clicking “Pick Specialists”, the chosen specialties and reasons will appear in the Round 1 column.</div>
+
+      <!-- Summary list of picked specialists (A–E) -->
+      <div class="divider"></div>
+      <div class="section-title" style="align-items:center;">
+        <h2 class="col-title">Selected Specialists</h2>
+        <span class="pill-kpi" id="specKpi">0/0</span>
+      </div>
+      <div id="specList" class="stack-8">
+        <div class="placeholder">After clicking “Pick Specialists”, the chosen specialties and reasons appear here.</div>
+      </div>
     </section>
 
-    <!-- MIDDLE: Round 1 -->
+    <!-- COLUMN 2: Round 1 -->
     <section class="card stack-12" id="col-round1">
       <div class="section-title" style="align-items:center;">
         <h2 class="col-title">Round 1 Questions</h2>
@@ -170,14 +204,9 @@
         <button class="btn" id="btnGenerateR1" disabled>Generate Round 1</button>
         <span class="muted">Builds Round-1 questions sequentially with de-dup vs earlier specialists.</span>
       </div>
-
-      <div class="row">
-        <button class="btn" id="btnGenerateR2" disabled>Generate Round 2</button>
-        <span class="muted">Enabled when Round-1 answers are filled (configurable).</span>
-      </div>
     </section>
 
-    <!-- RIGHT: Round 2 + Hypotheses + Consensus -->
+    <!-- COLUMN 3: Round 2 -->
     <section class="card stack-12" id="col-round2">
       <div class="section-title">
         <h2 class="col-title">Round 2 Follow-ups</h2>
@@ -191,9 +220,14 @@
         </div>
       </div>
 
-      <div class="divider"></div>
+      <div class="row">
+        <button class="btn" id="btnGenerateR2" disabled>Generate Round 2</button>
+        <span class="muted">Enabled when Round-1 answers are filled (configurable).</span>
+      </div>
+    </section>
 
-      <!-- === NEW: Diagnostic Hypotheses panel === -->
+    <!-- COLUMN 4: Hypotheses + Consensus -->
+    <section class="card stack-12" id="col-hypcons">
       <div class="section-title" style="align-items:center;">
         <h2 class="col-title">Diagnostic Hypotheses (per specialty)</h2>
         <div class="row" style="gap:8px;">
@@ -228,7 +262,7 @@
 
   <!-- ===== Footer info ===== -->
   <div style="padding:8px 16px; color:var(--muted); font-size:12px;">
-    Step 2.1 wired: Intake → Pick Specialists. Step 2.2 wired: Round-1 generation with priorQuestions. Step 2.3 wired: Round-1 gating & progress. Step 2.4 wired: Round-2 generation & gating. <b>New:</b> Hypotheses + Consensus wired.
+    Step 2.1 wired: Intake → Pick Specialists. Step 2.2 wired: Round-1 generation with priorQuestions. Step 2.3 wired: Round-1 gating & progress. Step 2.4 wired: Round-2 generation & gating. <b>New layout:</b> 4 columns with Hypotheses + Consensus in a dedicated column.
   </div>
 
   <!-- =========================================================
@@ -266,7 +300,7 @@
      You will paste your own prompt texts where marked "TODO".
      =========================== */
 
-  /** 
+  /**
    * IMPORTANT:
    * - PROXY_URL must already exist (from your previous script block).
    * - Do NOT put secrets (API keys) here. Keys live in GAS Script Properties.
@@ -274,7 +308,7 @@
    */
 
   /* ---- Developer mode flags (safe defaults) ---- */
-  const DEV_MODE = true;                
+  const DEV_MODE = true;
   const DEV_ALLOW_EMPTY_PROMPTS = false;
 
   /* ---- Config object (EDIT THESE VALUES ONLY) ---- */
@@ -282,18 +316,18 @@
     PROXY_URL: (typeof PROXY_URL === "string" && PROXY_URL) || "",
 
     COUNTS: {
-      NUM_SPECIALISTS: 1,                
-      QUESTIONS_PER_SPECIALTY_ROUND1: 5, 
-      QUESTIONS_PER_SPECIALTY_ROUND2: 5  
+      NUM_SPECIALISTS: 1,
+      QUESTIONS_PER_SPECIALTY_ROUND1: 5,
+      QUESTIONS_PER_SPECIALTY_ROUND2: 5
     },
 
     RUNTIME: {
-      SEQUENTIAL_MODE: true,        
-      RETRY_ONCE: true,             
-      RETRY_DELAY_MS: 1500,         
-      PER_CALL_TIMEOUT_MS: 90000,   
+      SEQUENTIAL_MODE: true,
+      RETRY_ONCE: true,
+      RETRY_DELAY_MS: 1500,
+      PER_CALL_TIMEOUT_MS: 90000,
       ALLOW_BLANK_ANSWERS_R1: false,
-      ALLOW_BLANK_ANSWERS_R2: false 
+      ALLOW_BLANK_ANSWERS_R2: false
     },
 
     UI: {
@@ -625,7 +659,6 @@ Keep braces out of any surrounding text by forbidding surrounding text entirely.
 
 Double check output format one last time before generating your output. If it does not comply, repeat until it complies.
 `,
-   /* NEW: you author this */
       CONSENSUS: `ROLE
 You are "PanelConsensusMetaSpecialist", a multidisciplinary meta-aggregator emulating a PANEL OF FIVE board-certified specialists. Your job is to run a structured argument among the specialists (internally) and deliver a consensus note for the TWO likeliest diagnoses with exhaustive justification and concrete next steps. The audience is physicians (not a patient).
 
@@ -722,7 +755,6 @@ Language matches languageMode. No boilerplate beyond the required sections.
 BEGIN WHEN READY
 Wait for the next message beginning with \`CONTEXT_JSON:\`. Parse it and respond with exactly:
 { "noteText": "<the complete consensus note as specified>" }.`
-                 /* you already planned to author this */
     }
   };
 
@@ -822,7 +854,7 @@ Wait for the next message beginning with \`CONTEXT_JSON:\`. Parse it and respond
   const round2Container = document.getElementById('round2Container');
   const r1KpiEl = document.getElementById('r1Kpi');
 
-  // NEW — hypotheses + consensus DOM
+  // NEW — hypotheses + consensus DOM (moved to Column 4 but same IDs)
   const hypContainer = document.getElementById('hypothesesContainer');
   const hypKpiEl     = document.getElementById('hypKpi');
   const genHypBtn    = document.getElementById('btnGenerateHypotheses');
@@ -1094,6 +1126,7 @@ Wait for the next message beginning with \`CONTEXT_JSON:\`. Parse it and respond
     round1Container.innerHTML = "";
     if (!Array.isArray(list) || !list.length){
       round1Container.innerHTML = '<div class="placeholder">No specialists returned. You can try again.</div>';
+      renderSpecSummary(list); // update Column 1 summary as well
       return;
     }
     list.forEach((spec, idx) => {
@@ -1113,7 +1146,31 @@ Wait for the next message beginning with \`CONTEXT_JSON:\`. Parse it and respond
       `;
       round1Container.appendChild(card);
     });
+    renderSpecSummary(list); // keep Column 1 summary in sync
     updateR1ProgressUI();
+  }
+
+  // NEW: Column 1 specialist summary (A–E)
+  function renderSpecSummary(list){
+    const specListEl = document.getElementById('specList');
+    const kpiEl = document.getElementById('specKpi');
+    if (kpiEl) {
+      const count = Array.isArray(list) ? list.length : 0;
+      kpiEl.textContent = `${count}/${__CFG.COUNTS.NUM_SPECIALISTS}`;
+    }
+    if (!specListEl) return;
+    if (!Array.isArray(list) || !list.length){
+      specListEl.innerHTML = '<div class="placeholder">No specialists returned. You can try again.</div>';
+      return;
+    }
+    const html = list.map((spec, idx) => {
+      const letter = String.fromCharCode(65 + idx);
+      return `<div class="row">
+        <span class="pill" style="min-width:28px; justify-content:center;">${letter}</span>
+        <div>${escapeHtml(spec.name || '')} — <span class="muted">${escapeHtml(spec.why || '')}</span></div>
+      </div>`;
+    }).join('');
+    specListEl.innerHTML = html;
   }
 
   function buildPriorQuestions(currentIdx){
@@ -1334,6 +1391,12 @@ Wait for the next message beginning with \`CONTEXT_JSON:\`. Parse it and respond
     r1KpiEl.textContent = '0/0';
     if (hypKpiEl) hypKpiEl.textContent = '0/0';
 
+    // Reset Column 1 summary
+    const specListEl = document.getElementById('specList');
+    const kpiEl = document.getElementById('specKpi');
+    if (specListEl) specListEl.innerHTML = '<div class="placeholder">After clicking “Pick Specialists”, the chosen specialties and reasons appear here.</div>';
+    if (kpiEl) kpiEl.textContent = `0/${__CFG.COUNTS.NUM_SPECIALISTS}`;
+
     setStatus('Ready • Session cleared');
 
     genR1Btn.disabled = true;
@@ -1450,7 +1513,7 @@ Wait for the next message beginning with \`CONTEXT_JSON:\`. Parse it and respond
         setStatus(`Round-1: ${specName} (${idx+1}/${total}) completed.`);
       } catch (err) {
         console.error(err);
-        session.round1[specName] = []; 
+        session.round1[specName] = [];
         renderR1Unavailable(idx, specName, (err && err.message) || 'failed');
         setStatus(`Round-1: ${specName} failed after retry. Continuing…`);
       }
@@ -1534,7 +1597,7 @@ Wait for the next message beginning with \`CONTEXT_JSON:\`. Parse it and respond
             setStatus(`Round-2: ${specName} (${idx + 1}/${total}) completed.`);
           } catch (errSpec) {
             console.error(errSpec);
-            session.round2[specName] = []; 
+            session.round2[specName] = [];
             renderR2Unavailable(idx, specName, (errSpec && errSpec.message) || 'failed');
             setStatus(`Round-2: ${specName} failed after retry. Continuing…`);
           }
@@ -1745,4 +1808,3 @@ Wait for the next message beginning with \`CONTEXT_JSON:\`. Parse it and respond
 
 </body>
 </html>
-
