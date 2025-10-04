@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Doctor Consult Orchestrator (UI Skeleton • v1 + Hypotheses)</title>
+  <title>Doctor Consult Orchestrator (UI Skeleton • v1.1 Active Highlight + Loading)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <!-- ===== Minimal, clean styling (no framework) ===== -->
@@ -13,8 +13,8 @@
       --panel-2:#111521;
       --text:#e8eaf1;
       --muted:#9aa3b2;
-      --accent:#3b82f6;
-      --accent-2:#22c55e;
+      --accent:#3b82f6;     /* active */
+      --accent-2:#22c55e;   /* success */
       --border:#263042;
       --danger:#ef4444;
       --warn:#f59e0b;
@@ -28,6 +28,9 @@
       color:var(--text);
       line-height:1.45;
     }
+
+    /* Utility */
+    .hidden{display:none !important;}
 
     /* ===== Top bar (centered) ===== */
     .topbar{
@@ -43,18 +46,10 @@
       align-items:center;
       gap:12px;
     }
-    .tb-center{
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      text-align:center;
-    }
+    .tb-center{ display:flex; flex-direction:column; align-items:center; text-align:center; }
     .topbar h1{font-size:24px; margin:0 0 6px 0; font-weight:800; letter-spacing:.2px}
     .tb-right{ display:flex; gap:8px; align-items:center; justify-content:flex-end; }
-    .status{
-      font-size:12px; color:var(--muted);
-      padding:4px 8px; border:1px dashed var(--border); border-radius:8px;
-    }
+    .status{ font-size:12px; color:var(--muted); padding:4px 8px; border:1px dashed var(--border); border-radius:8px; }
 
     .btn{
       display:inline-flex; align-items:center; justify-content:center;
@@ -67,29 +62,17 @@
     .btn-clear{background:#161b28}
     .btn-copy{background:#141c2a}
 
-    .pill{
-      display:inline-block; padding:4px 8px; border-radius:999px;
-      background:#13192a; border:1px solid var(--border); color:var(--muted); font-size:12px;
-    }
-    .pill-kpi{
-      display:inline-block; padding:2px 8px; border-radius:999px;
-      background:#101626; border:1px solid var(--border); color:#c8d3eb; font-size:11px;
-    }
+    .pill{ display:inline-block; padding:4px 8px; border-radius:999px; background:#13192a; border:1px solid var(--border); color:var(--muted); font-size:12px; }
+    .pill-kpi{ display:inline-block; padding:2px 8px; border-radius:999px; background:#101626; border:1px solid var(--border); color:#c8d3eb; font-size:11px; }
     .muted{color:var(--muted)}
 
     /* ===== 4-column main grid ===== */
-    .container{
-      padding:16px;
-      display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:16px;
-    }
-    @media (max-width:1360px){
-      .container{ grid-template-columns: 1fr 1fr; }
-    }
-    @media (max-width:900px){
-      .container{ grid-template-columns: 1fr; }
-    }
+    .container{ padding:16px; display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:16px; }
+    @media (max-width:1360px){ .container{ grid-template-columns: 1fr 1fr; } }
+    @media (max-width:900px){ .container{ grid-template-columns: 1fr; } }
 
     .card{
+      position:relative; /* needed for in-column overlay */
       background:var(--panel);
       border:1px solid var(--border);
       border-radius:14px;
@@ -97,6 +80,15 @@
       box-shadow:0 0 0 1px rgba(255,255,255,0.02) inset, 0 2px 18px rgba(0,0,0,0.25);
     }
     .card h2{font-size:14px; margin:0 0 8px 0; font-weight:700; color:#e6ebff}
+
+    /* === ACTIVE COLUMN (binary) === */
+    .card.is-active{
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.05) inset,
+                  0 0 0 2px rgba(59,130,246,0.45),
+                  0 8px 24px rgba(0,0,0,0.35);
+    }
+
     .help{font-size:12px; color:var(--muted); margin-bottom:8px}
     label{display:block; font-size:12px; color:var(--muted); margin-bottom:6px}
     textarea, input{
@@ -107,26 +99,17 @@
     }
     textarea{min-height:180px; resize:vertical}
     .row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
-    .placeholder{
-      padding:10px 12px; border-radius:10px; background:#101626; border:1px dashed var(--border); color:var(--muted); font-size:13px;
-    }
-    .section-title{
-      display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px;
-    }
+    .placeholder{ padding:10px 12px; border-radius:10px; background:#101626; border:1px dashed var(--border); color:var(--muted); font-size:13px; }
+    .section-title{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px; }
     .col-title{font-weight:700; letter-spacing:.2px}
     .stack-8 > * + *{margin-top:8px}
     .stack-12 > * + *{margin-top:12px}
     .stack-16 > * + *{margin-top:16px}
     .stack-24 > * + *{margin-top:24px}
     .divider{height:1px; background:var(--border); margin:12px 0}
-    .note{
-      white-space:pre-wrap; background:#0f1524; border:1px solid var(--border);
-      border-radius:10px; padding:12px; min-height:120px; color:#dbe7ff; font-size:14px;
-    }
+    .note{ white-space:pre-wrap; background:#0f1524; border:1px solid var(--border); border-radius:10px; padding:12px; min-height:120px; color:#dbe7ff; font-size:14px; }
     .grid-qs{ display:grid; grid-template-columns:1fr; gap:12px; }
-    .qs-card{
-      background:#0f1524; border:1px solid var(--border); border-radius:12px; padding:10px;
-    }
+    .qs-card{ background:#0f1524; border:1px solid var(--border); border-radius:12px; padding:10px; }
     .qs-card .q{font-weight:600; font-size:13px; color:#dfe7ff; margin-bottom:6px}
     .qs-card .rationale{font-size:12px; color:var(--muted); margin-bottom:8px}
     .tag-warn{color:#fbbf24}
@@ -134,10 +117,25 @@
 
     /* Validation visuals */
     .invalid{ border-color: var(--warn) !important; }
-    .valid{ border-color: rgba(34,197,94,0.35) !important; } /* soft green */
+    .valid{ border-color: rgba(34,197,94,0.35) !important; }
 
     /* Preserve line breaks for multi-line hypothesis text */
     .prewrap{ white-space: pre-wrap; }
+
+    /* ===== In-column loading overlay ===== */
+    .loading-overlay{
+      position:absolute; inset:0; z-index:5;
+      display:flex; align-items:center; justify-content:center;
+      background:linear-gradient(180deg, rgba(10,14,25,0.7), rgba(10,14,25,0.7));
+      backdrop-filter: blur(2px);
+      border-radius:14px;
+      border:1px solid rgba(59,130,246,0.25);
+    }
+    .loading-box{ width:min(520px, 92%); display:flex; flex-direction:column; gap:10px; }
+    .loading-title{ font-weight:800; letter-spacing:.2px; }
+    .loading-meta{ font-size:12px; color:#cbd5e1; }
+    .progress-track{ width:100%; height:10px; border-radius:999px; background:#0f1524; border:1px solid var(--border); overflow:hidden; }
+    .progress-bar{ height:100%; width:0%; background:var(--accent); transition:width .2s linear; }
   </style>
 </head>
 
@@ -152,7 +150,7 @@
         <span class="status" id="statusBar" aria-live="polite">Ready • Waiting for intake</span>
       </div>
       <div class="tb-right">
-        <span class="pill">v1 • memory-only</span>
+        <span class="pill">v1.1 • memory-only</span>
         <button class="btn btn-clear" id="btnClear" disabled>Clear Session</button>
       </div>
     </div>
@@ -161,18 +159,26 @@
   <!-- ===== Four-column layout ===== -->
   <main class="container">
     <!-- COLUMN 1: Intake & Picks -->
-    <section class="card stack-12" id="col-intake">
+    <section class="card stack-12" id="col-intake" role="region" aria-labelledby="h2-intake">
       <div class="section-title">
-        <h2 class="col-title">Intake</h2>
+        <h2 class="col-title" id="h2-intake">Intake</h2>
       </div>
       <div class="help">Paste the patient’s story here. UI is English; model output language will follow your prompts (auto from intake).</div>
       <div>
         <label for="intakeText">Patient story</label>
         <textarea id="intakeText" placeholder="Example: 54-year-old with chest discomfort on exertion, worse over 3 weeks..."></textarea>
       </div>
+
+      <!-- NEW combined CTA -->
       <div class="row">
-        <button class="btn" id="btnPickSpecialists" disabled>Pick Specialists</button>
+        <button class="btn" id="btnPickAndR1" disabled>Pick Specialists &amp; Generate Questions</button>
         <span class="muted">Default: 5 specialists (you control counts in Config).</span>
+      </div>
+
+      <!-- Keep legacy pick button (hidden) to avoid breaking JS references -->
+      <div class="row hidden">
+        <button class="btn" id="btnPickSpecialists" disabled>Pick Specialists</button>
+        <span class="muted">Legacy (hidden)</span>
       </div>
 
       <!-- Summary list of picked specialists (A–E) -->
@@ -182,14 +188,14 @@
         <span class="pill-kpi" id="specKpi">0/0</span>
       </div>
       <div id="specList" class="stack-8">
-        <div class="placeholder">After clicking “Pick Specialists”, the chosen specialties and reasons appear here.</div>
+        <div class="placeholder">After picking, the chosen specialties and reasons appear here.</div>
       </div>
     </section>
 
     <!-- COLUMN 2: Round 1 -->
-    <section class="card stack-12" id="col-round1">
+    <section class="card stack-12" id="col-round1" role="region" aria-labelledby="h2-round1">
       <div class="section-title" style="align-items:center;">
-        <h2 class="col-title">Round 1 Questions</h2>
+        <h2 class="col-title" id="h2-round1">Round 1 Questions</h2>
         <div class="row" style="gap:8px;">
           <span class="pill-kpi" id="r1Kpi">0/0</span>
           <span class="pill">per specialty</span>
@@ -197,50 +203,50 @@
       </div>
 
       <div id="round1Container" class="stack-12">
-        <div class="placeholder">Specialty sections (A…E) will render here. Each will show questions with one simple text box per question.</div>
+        <div class="placeholder">Pick specialists before you can generate Round 1.</div>
       </div>
 
+      <!-- Keep legacy Generate R1 (hidden, for JS safety); visible CTA for this column is only Generate R2 -->
       <div class="row">
-        <button class="btn" id="btnGenerateR1" disabled>Generate Round 1</button>
-        <span class="muted">Builds Round-1 questions sequentially with de-dup vs earlier specialists.</span>
+        <button class="btn hidden" id="btnGenerateR1" disabled>Generate Round 1</button>
+        <button class="btn" id="btnGenerateR2" disabled>Generate Round 2</button>
+        <span class="muted">Round-2 unlocks after you answer Round-1.</span>
       </div>
     </section>
 
     <!-- COLUMN 3: Round 2 -->
-    <section class="card stack-12" id="col-round2">
+    <section class="card stack-12" id="col-round2" role="region" aria-labelledby="h2-round2">
       <div class="section-title">
-        <h2 class="col-title">Round 2 Follow-ups</h2>
+        <h2 class="col-title" id="h2-round2">Round 2 Follow-ups</h2>
         <span class="pill">no repeats</span>
       </div>
       <div id="round2Container" class="stack-12">
-        <div class="qs-card">
-          <div class="q">[Example] Cardiology — Follow-up Q1 will appear here</div>
-          <div class="rationale">Rationale: rule-in/rule-out specifics (example)</div>
-          <textarea disabled placeholder="Doctor’s answer goes here (example)"></textarea>
-        </div>
+        <div class="placeholder">Generate Round 1 before you can generate Round 2.</div>
       </div>
 
+      <!-- Combined Hyp+Consensus CTA here -->
       <div class="row">
-        <button class="btn" id="btnGenerateR2" disabled>Generate Round 2</button>
-        <span class="muted">Enabled when Round-1 answers are filled (configurable).</span>
+        <button class="btn" id="btnGenHypAndConsensus" disabled>Generate Hypotheses &amp; Consensus</button>
+        <span class="muted">Runs per specialty, then composes the consensus note.</span>
       </div>
     </section>
 
     <!-- COLUMN 4: Hypotheses + Consensus -->
-    <section class="card stack-12" id="col-hypcons">
+    <section class="card stack-12" id="col-hypcons" role="region" aria-labelledby="h2-hypcons">
       <div class="section-title" style="align-items:center;">
-        <h2 class="col-title">Diagnostic Hypotheses (per specialty)</h2>
+        <h2 class="col-title" id="h2-hypcons">Diagnostic Hypotheses (per specialty)</h2>
         <div class="row" style="gap:8px;">
           <span class="pill-kpi" id="hypKpi">0/0</span>
           <span class="pill">sequential • retry once</span>
         </div>
       </div>
       <div id="hypothesesContainer" class="stack-12">
-        <div class="placeholder">After Round-2 answers are complete, click “Generate Hypotheses” to see each specialty’s diagnostic hypothesis, justification, and steelman.</div>
+        <div class="placeholder">Generate Round 2 before you can generate Hypotheses and Consensus.</div>
       </div>
-      <div class="row">
+      <!-- Legacy Hyp/Consensus buttons kept but hidden to preserve JS references; output-only column -->
+      <div class="row hidden">
         <button class="btn" id="btnGenerateHypotheses" disabled>Generate Hypotheses</button>
-        <span class="muted">Runs per specialty (A→E). Continues even if one fails.</span>
+        <span class="muted">Hidden (moved to Column 3)</span>
       </div>
 
       <div class="divider"></div>
@@ -252,7 +258,9 @@
       <div class="stack-8">
         <div id="consensusNote" class="note" aria-live="polite">[Consensus note will render here]</div>
         <div class="row">
-          <button class="btn" id="btnGenerateConsensus" disabled>Generate Consensus</button>
+          <!-- Legacy consensus button kept hidden -->
+          <button class="btn hidden" id="btnGenerateConsensus" disabled>Generate Consensus</button>
+
           <button class="btn btn-copy" id="btnCopyNote" disabled>Copy note</button>
           <span class="muted">Copy includes exactly what’s shown above.</span>
         </div>
@@ -262,7 +270,7 @@
 
   <!-- ===== Footer info ===== -->
   <div style="padding:8px 16px; color:var(--muted); font-size:12px;">
-    Step 2.1 wired: Intake → Pick Specialists. Step 2.2 wired: Round-1 generation with priorQuestions. Step 2.3 wired: Round-1 gating & progress. Step 2.4 wired: Round-2 generation & gating. <b>New layout:</b> 4 columns with Hypotheses + Consensus in a dedicated column.
+    Step 2.1 wired: Intake → Pick Specialists. Step 2.2 wired: Round-1 generation with priorQuestions. Step 2.3 wired: Round-1 gating & progress. Step 2.4 wired: Round-2 generation & gating. <b>New in v1.1:</b> Binary active-column highlight + in-column loading overlay with countdown.
   </div>
 
   <!-- =========================================================
@@ -334,15 +342,13 @@
       SHOW_STATUS_PANEL: true,
       CONFIRM_ON_CLEAR: true,
       SHOW_COPY_NOTE_BUTTON: true,
-      SHOW_HYPOTHESES_PANEL: true
+      SHOW_HYPOTHESES_PANEL: true,
+      TYPICAL_PHASE_MS: 15000  // used for the overlay hint ("typically ~15 s")
     },
 
     LANGUAGE_MODE: "AUTO_FROM_INTAKE",
 
-    /*
-     * PROMPTS: YOU write these. The code just forwards them.
-     * I am NOT authoring prompts; placeholders are provided where applicable.
-     */
+    /* PROMPTS elided for brevity here — they stay identical to your v1 code. */
     PROMPTS: {
       PICK_SPECIALISTS: `ROLE
 You are “SpecialtyPicker”, a physician-to-physician consult router. Given a free-text patient story, choose the top N medical specialties most likely to own initial workup/management for the primary problem(s).
@@ -803,7 +809,7 @@ Wait for the next message beginning with \`CONTEXT_JSON:\`. Parse it and respond
     if (typeof u.SHOW_HYPOTHESES_PANEL !== "boolean") issues.push("UI.SHOW_HYPOTHESES_PANEL must be true/false.");
 
     const p = cfg.PROMPTS || {};
-    ["PICK_SPECIALISTS","ROUND1","ROUND2","DIAGNOSTIC_HYPOTHESIS","CONSENSUS"].forEach(key => {   /* NEW key included */
+    ["PICK_SPECIALISTS","ROUND1","ROUND2","DIAGNOSTIC_HYPOTHESIS","CONSENSUS"].forEach(key => {
       const val = p[key];
       if (typeof val !== "string") {
         issues.push(`PROMPTS.${key} must be a string (use backticks \`...\`).`);
@@ -839,27 +845,40 @@ Wait for the next message beginning with \`CONTEXT_JSON:\`. Parse it and respond
   </script>
 
   <!-- =========================================================
-       APP LOGIC — rounds, hypotheses, consensus
+       APP LOGIC — rounds, hypotheses, consensus + ACTIVE COLUMN + OVERLAY
        ========================================================= -->
   <script>
   // ---------- DOM refs ----------
   const intakeEl = document.getElementById('intakeText');
+
+  // NEW combined CTA
+  const pickAndR1Btn = document.getElementById('btnPickAndR1');
+
+  // Legacy refs (kept for logic safety; hidden in UI)
   const pickBtn  = document.getElementById('btnPickSpecialists');
+
   const statusEl = document.getElementById('statusBar');
   const clearBtn = document.getElementById('btnClear');
-  const genR1Btn = document.getElementById('btnGenerateR1');
-  const genR2Btn = document.getElementById('btnGenerateR2');
+
+  // Legacy R1 button (hidden) + visible R2 button
+  const genR1Btn = document.getElementById('btnGenerateR1'); // hidden
+  const genR2Btn = document.getElementById('btnGenerateR2'); // visible
 
   const round1Container = document.getElementById('round1Container');
   const round2Container = document.getElementById('round2Container');
   const r1KpiEl = document.getElementById('r1Kpi');
 
-  // NEW — hypotheses + consensus DOM (moved to Column 4 but same IDs)
+  // Hypotheses + consensus DOM
   const hypContainer = document.getElementById('hypothesesContainer');
   const hypKpiEl     = document.getElementById('hypKpi');
-  const genHypBtn    = document.getElementById('btnGenerateHypotheses');
 
-  const genConBtn    = document.getElementById('btnGenerateConsensus');
+  // Legacy (hidden) gen buttons in Column 4 — kept for state safety
+  const genHypBtn    = document.getElementById('btnGenerateHypotheses'); // hidden
+  const genConBtn    = document.getElementById('btnGenerateConsensus');  // hidden
+
+  // New combined Hyp+Consensus CTA in Column 3
+  const genHypAndConBtn = document.getElementById('btnGenHypAndConsensus');
+
   const consensusNoteEl = document.getElementById('consensusNote');
   const copyBtn      = document.getElementById('btnCopyNote');
 
@@ -871,7 +890,7 @@ Wait for the next message beginning with \`CONTEXT_JSON:\`. Parse it and respond
       specialists: [],            // [{name, why}]
       round1: {},                 // { [specName]: [{q,rationale,answer}] }
       round2: {},                 // { [specName]: [{q,rationale,answer}] }
-      hypotheses: {},             // NEW: { [specName]: { diagnosis, justification, steelman } }
+      hypotheses: {},             // { [specName]: { diagnosis, justification, steelman } }
       consensus: { noteText: "" }
     };
   }
@@ -879,7 +898,7 @@ Wait for the next message beginning with \`CONTEXT_JSON:\`. Parse it and respond
   // ---------- Local UI state ----------
   const __STATE = {
     r1Locked: false,        // lock after Round-1 generation to avoid re-picking specialists
-    hypothesesRan: false    // NEW: becomes true after hypotheses loop finishes (success or not)
+    hypothesesRan: false    // becomes true after hypotheses loop finishes (success or not)
   };
 
   // Helpers
@@ -893,35 +912,49 @@ Wait for the next message beginning with \`CONTEXT_JSON:\`. Parse it and respond
       .replace(/"/g,"&quot;")
       .replace(/'/g,"&#39;");
   }
-  async function withRetry(fn, retries){
+
+  // ====== RETRY with beforeAttempt hook (for overlay countdown reset) ======
+  async function withRetry(fn, retries, beforeAttempt){
     let lastErr;
     for (let attempt = 0; attempt <= retries; attempt++){
+      if (typeof beforeAttempt === 'function') {
+        try { beforeAttempt(attempt, retries + 1); } catch(_) {}
+      }
       try { return await fn(); }
       catch (err){
         lastErr = err;
-        if (attempt < retries) await delay(__CFG.RUNTIME.RETRY_DELAY_MS);
+        if (attempt < retries) await delay(window.__CFG.RUNTIME.RETRY_DELAY_MS);
       }
     }
     throw lastErr;
   }
+
   async function callProxyWithTimeout(body, timeoutMs){
     return await Promise.race([
       callProxy(body),
       new Promise((_, reject) => setTimeout(() => reject(new Error(`Timeout after ${timeoutMs} ms`)), timeoutMs))
     ]);
   }
+
   function setRound1Lock(locked) {
     __STATE.r1Locked = !!locked;
-    if (__STATE.r1Locked) {
-      genR1Btn.disabled = true;
-      genR1Btn.textContent = 'Round 1 Generated (locked)';
-      genR1Btn.title = 'Round-1 is locked to prevent overwriting. Use “Clear Session” to start over.';
-      pickBtn.disabled = true;
-      pickBtn.title = 'Locked after Round-1 generation. Clear Session to pick again.';
-    } else {
-      genR1Btn.textContent = 'Generate Round 1';
-      genR1Btn.title = '';
-      pickBtn.title = '';
+    if (genR1Btn) {
+      if (__STATE.r1Locked) {
+        genR1Btn.disabled = true;
+        genR1Btn.textContent = 'Round 1 Generated (locked)';
+        genR1Btn.title = 'Round-1 is locked to prevent overwriting. Use “Clear Session” to start over.';
+      } else {
+        genR1Btn.textContent = 'Generate Round 1';
+        genR1Btn.title = '';
+      }
+    }
+    if (pickBtn) {
+      if (__STATE.r1Locked) {
+        pickBtn.disabled = true;
+        pickBtn.title = 'Locked after Round-1 generation. Clear Session to pick again.';
+      } else {
+        pickBtn.title = '';
+      }
     }
   }
 
@@ -929,9 +962,9 @@ Wait for the next message beginning with \`CONTEXT_JSON:\`. Parse it and respond
   let _busy = false;
   function setBusy(isBusy, phaseLabel){
     _busy = isBusy;
-    if (isBusy && phaseLabel) setStatus(`${phaseLabel}…`);
+    if (isBusy && phaseLabel) setStatus(`${phaseLabel}`);
     setButtonsState();
-    pickBtn.disabled = true; // avoid concurrent calls
+    if (pickBtn) pickBtn.disabled = true; // avoid concurrent calls (legacy button)
   }
 
   // ---------- Validation visuals ----------
@@ -961,13 +994,13 @@ Wait for the next message beginning with \`CONTEXT_JSON:\`. Parse it and respond
   }
   function updateR1ProgressUI() {
     const { totalRequired, answered, perSpec } = getR1Totals();
-    r1KpiEl.textContent = `${answered}/${totalRequired}`;
+    if (r1KpiEl) r1KpiEl.textContent = `${answered}/${totalRequired}`;
     perSpec.forEach(({ idx, total, answered }) => {
       const kpi = document.getElementById(`r1p-${idx}`);
       if (kpi) kpi.textContent = `${answered}/${total}`;
     });
     const ready = areAllRequiredR1Answered();
-    genR2Btn.disabled = !ready || _busy;
+    if (genR2Btn) genR2Btn.disabled = !ready || _busy;
     if (ready) setStatus('Round-1 answers complete — you can generate Round-2.');
   }
   function areAllRequiredR1Answered(){
@@ -977,14 +1010,14 @@ Wait for the next message beginning with \`CONTEXT_JSON:\`. Parse it and respond
       const arr = session.round1[name];
       if (!Array.isArray(arr) || arr.length === 0) continue;
       hasAnyQuestions = true;
-      if (!__CFG.RUNTIME.ALLOW_BLANK_ANSWERS_R1){
+      if (!window.__CFG.RUNTIME.ALLOW_BLANK_ANSWERS_R1){
         for (const item of arr){ if ((item?.answer || '').trim().length === 0) return false; }
       }
     }
     return hasAnyQuestions;
   }
   function highlightMissingR1Answers() {
-    if (__CFG.RUNTIME.ALLOW_BLANK_ANSWERS_R1) return;
+    if (window.__CFG.RUNTIME.ALLOW_BLANK_ANSWERS_R1) return;
     for (let idx = 0; idx < session.specialists.length; idx++) {
       const specName = session.specialists[idx]?.name || '';
       const arr = session.round1[specName];
@@ -998,7 +1031,7 @@ Wait for the next message beginning with \`CONTEXT_JSON:\`. Parse it and respond
     }
   }
   function findFirstMissingR1Answer() {
-    if (__CFG.RUNTIME.ALLOW_BLANK_ANSWERS_R1) return null;   // FIX: RUNTIME casing
+    if (window.__CFG.RUNTIME.ALLOW_BLANK_ANSWERS_R1) return null;
     for (let idx = 0; idx < session.specialists.length; idx++) {
       const specName = session.specialists[idx]?.name || '';
       const arr = session.round1[specName];
@@ -1037,8 +1070,9 @@ Wait for the next message beginning with \`CONTEXT_JSON:\`. Parse it and respond
       if (kpi) kpi.textContent = `${answered}/${total}`;
     });
     const ready = areAllRequiredR2Answered();
-    genHypBtn.disabled = !ready || _busy;   // NEW: hypotheses gated on R2
-    if (ready) setStatus('Round-2 answers complete — you can generate Diagnostic Hypotheses.');
+    if (genHypBtn) genHypBtn.disabled = !ready || _busy;        // legacy (hidden)
+    if (genHypAndConBtn) genHypAndConBtn.disabled = !ready || _busy;   // new combined CTA
+    if (ready) setStatus('Round-2 answers complete — you can generate Diagnostic Hypotheses & Consensus.');
   }
   function areAllRequiredR2Answered() {
     let hasAny = false;
@@ -1047,14 +1081,14 @@ Wait for the next message beginning with \`CONTEXT_JSON:\`. Parse it and respond
       const arr = session.round2[name];
       if (!Array.isArray(arr) || arr.length === 0) continue;
       hasAny = true;
-      if (!__CFG.RUNTIME.ALLOW_BLANK_ANSWERS_R2) {
+      if (!window.__CFG.RUNTIME.ALLOW_BLANK_ANSWERS_R2) {
         for (const item of arr) if ((item?.answer || '').trim().length === 0) return false;
       }
     }
     return hasAny;
   }
   function highlightMissingR2Answers() {
-    if (__CFG.RUNTIME.ALLOW_BLANK_ANSWERS_R2) return;
+    if (window.__CFG.RUNTIME.ALLOW_BLANK_ANSWERS_R2) return;
     for (let idx = 0; idx < session.specialists.length; idx++) {
       const specName = session.specialists[idx]?.name || '';
       const arr = session.round2[specName];
@@ -1068,7 +1102,7 @@ Wait for the next message beginning with \`CONTEXT_JSON:\`. Parse it and respond
     }
   }
   function findFirstMissingR2Answer() {
-    if (__CFG.RUNTIME.ALLOW_BLANK_ANSWERS_R2) return null;  // FIX: RUNTIME casing
+    if (window.__CFG.RUNTIME.ALLOW_BLANK_ANSWERS_R2) return null;
     for (let idx = 0; idx < session.specialists.length; idx++) {
       const specName = session.specialists[idx]?.name || '';
       const arr = session.round2[specName];
@@ -1082,81 +1116,174 @@ Wait for the next message beginning with \`CONTEXT_JSON:\`. Parse it and respond
     return null;
   }
 
+  // ===================== ACTIVE COLUMN (binary) + OVERLAY =====================
+  const COLUMN_IDS = ['col-intake','col-round1','col-round2','col-hypcons'];
+  let CURRENT_PHASE = null; // { key, colId } when a phase is actively running
+
+  function applyActiveColumn(colId){
+    COLUMN_IDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const active = (id === colId);
+      el.classList.toggle('is-active', active);
+      if (active) el.setAttribute('aria-current','step'); else el.removeAttribute('aria-current');
+    });
+  }
+
+  function computeActiveColumn(){
+    // During an explicit phase, trust CURRENT_PHASE
+    if (CURRENT_PHASE && CURRENT_PHASE.colId) return CURRENT_PHASE.colId;
+
+    // Post-phase precedence
+    if (session && session.consensus && (session.consensus.noteText || '').trim().length > 0) return 'col-hypcons';
+    if (genHypAndConBtn && !genHypAndConBtn.disabled) return 'col-round2';
+    if (genR2Btn && !genR2Btn.disabled) return 'col-round2';
+
+    const hasR1 = Object.values(session.round1 || {}).some(arr => Array.isArray(arr) && arr.length);
+    if (hasR1 && !areAllRequiredR1Answered()) return 'col-round1';
+
+    // Default (fresh load / after clear)
+    return 'col-intake';
+  }
+
+  // -------- In-column overlay (countdown + progress) --------
+  let _overlayEl = null;
+  let _overlayTimer = null;
+  let _overlayStart = 0;
+  let _overlayMax = 0;
+
+  function _fmtTime(ms){
+    const s = Math.max(0, Math.ceil(ms/1000));
+    const mm = String(Math.floor(s/60)).padStart(2,'0');
+    const ss = String(s % 60).padStart(2,'0');
+    return `${mm}:${ss}`;
+  }
+
+  function _mountOverlay(colId, title){
+    // Remove existing overlay if any
+    _unmountOverlay();
+    const host = document.getElementById(colId);
+    if (!host) return;
+    const el = document.createElement('div');
+    el.className = 'loading-overlay';
+    el.id = 'phaseOverlay';
+    el.setAttribute('role','status');
+    el.setAttribute('aria-live','polite');
+    el.innerHTML = `
+      <div class="loading-box">
+        <div class="loading-title" id="overlayTitle">${escapeHtml(title || 'Working…')}</div>
+        <div class="loading-meta" id="overlayMeta"><span id="overlayCountdown">--:--</span> remaining • typically ~${Math.round((window.__CFG.UI.TYPICAL_PHASE_MS||15000)/1000)} s</div>
+        <div class="progress-track"><div class="progress-bar" id="overlayBar" style="width:0%"></div></div>
+      </div>`;
+    host.appendChild(el);
+    _overlayEl = el;
+  }
+
+  function _unmountOverlay(){
+    if (_overlayTimer) { clearInterval(_overlayTimer); _overlayTimer = null; }
+    if (_overlayEl && _overlayEl.parentNode) _overlayEl.parentNode.removeChild(_overlayEl);
+    _overlayEl = null; _overlayStart = 0; _overlayMax = 0;
+  }
+
+  function beginPhase(phaseKey, colId, title){
+    CURRENT_PHASE = { key: String(phaseKey||'phase'), colId: String(colId) };
+    applyActiveColumn(colId); // binary highlight immediately
+    _mountOverlay(colId, title || 'Working…');
+    // initialize first countdown window using max per-call (will be reset per attempt)
+    resetOverlayAttempt(window.__CFG.RUNTIME.PER_CALL_TIMEOUT_MS, 0, (window.__CFG.RUNTIME.RETRY_ONCE?2:1));
+  }
+
+  function resetOverlayAttempt(maxMs, attemptIndex, totalAttempts){
+    if (!_overlayEl) return;
+    _overlayStart = Date.now();
+    _overlayMax = Math.max(1000, Number(maxMs)||window.__CFG.RUNTIME.PER_CALL_TIMEOUT_MS);
+    const countdownEl = document.getElementById('overlayCountdown');
+    const barEl = document.getElementById('overlayBar');
+    const titleEl = document.getElementById('overlayTitle');
+    if (titleEl && typeof attemptIndex === 'number' && typeof totalAttempts === 'number' && totalAttempts > 1){
+      // Append attempt info: "(Attempt X/Y)"
+      const base = titleEl.textContent.split(' (Attempt')[0];
+      titleEl.textContent = `${base} (Attempt ${attemptIndex+1}/${totalAttempts})`;
+    }
+    if (_overlayTimer) { clearInterval(_overlayTimer); _overlayTimer = null; }
+    function tick(){
+      const elapsed = Date.now() - _overlayStart;
+      const remaining = Math.max(0, _overlayMax - elapsed);
+      if (countdownEl) countdownEl.textContent = _fmtTime(remaining);
+      if (barEl) {
+        const p = Math.min(100, Math.max(0, (elapsed / _overlayMax)*100));
+        barEl.style.width = `${p}%`;
+      }
+      if (remaining <= 0){
+        clearInterval(_overlayTimer); _overlayTimer = null;
+      }
+    }
+    tick();
+    _overlayTimer = setInterval(tick, 1000);
+  }
+
+  function endPhase(){
+    _unmountOverlay();
+    CURRENT_PHASE = null;
+    applyActiveColumn(computeActiveColumn()); // restore binary highlight based on state
+  }
+
   // ---------- Buttons state (single source of truth) ----------
   function setButtonsState() {
     const hasIntake = (intakeEl.value || '').trim().length > 0;
 
-    // Intake gates picking (locked after R1)
-    pickBtn.disabled = __STATE.r1Locked ? true : (!hasIntake || _busy);
+    // Column 1 — NEW combined CTA
+    if (pickAndR1Btn) pickAndR1Btn.disabled = __STATE.r1Locked ? true : (!hasIntake || _busy);
 
-    // Clear enabled if anything in session
+    // Legacy intake gates (kept for safety; button is hidden)
+    if (pickBtn) pickBtn.disabled = __STATE.r1Locked ? true : (!hasIntake || _busy);
+
+    // Clear enabled if anything in session or intake present
     clearBtn.disabled = !hasIntake && session.specialists.length === 0;
 
-    // Round-1 button enabled only after specialists picked, not busy, not locked
-    genR1Btn.disabled = (session.specialists.length === 0) || _busy || __STATE.r1Locked;
+    // Legacy Round-1 button (hidden) — keep logic intact
+    if (genR1Btn) genR1Btn.disabled = (session.specialists.length === 0) || _busy || __STATE.r1Locked;
 
     // Round-2 button depends on Round-1 gating + busy
-    genR2Btn.disabled = !areAllRequiredR1Answered() || _busy;
+    if (genR2Btn) genR2Btn.disabled = !areAllRequiredR1Answered() || _busy;
 
-    // Hypotheses button depends on Round-2 gating + busy
-    genHypBtn.disabled = !areAllRequiredR2Answered() || _busy;
+    // Hypotheses button (legacy, hidden) depends on Round-2 gating + busy
+    if (genHypBtn) genHypBtn.disabled = !areAllRequiredR2Answered() || _busy;
 
-    // Consensus depends on hypotheses having been attempted + busy
-    genConBtn.disabled = !(__STATE.hypothesesRan && areAllRequiredR2Answered()) || _busy;
+    // Consensus (legacy, hidden) depends on hypotheses ran + busy
+    if (genConBtn) genConBtn.disabled = !(__STATE.hypothesesRan && areAllRequiredR2Answered()) || _busy;
+
+    // New combined Hyp+Consensus CTA (Column 3)
+    if (genHypAndConBtn) genHypAndConBtn.disabled = !areAllRequiredR2Answered() || _busy;
 
     // Copy stays disabled until consensus exists
     copyBtn.disabled = !(session.consensus && session.consensus.noteText && session.consensus.noteText.trim().length);
-    
+
     // Keep KPIs honest
     updateR1ProgressUI();
     updateR2ProgressUI();
     updateHypProgressUI();
+
+    // === Binary highlight recompute (when not in an explicit phase) ===
+    if (!CURRENT_PHASE) applyActiveColumn(computeActiveColumn());
   }
 
   // ---------- Intake typing gates buttons ----------
   intakeEl.addEventListener('input', () => {
     const hasText = (intakeEl.value || '').trim().length > 0;
-    pickBtn.disabled = __STATE.r1Locked ? true : (!hasText || _busy);
-    clearBtn.disabled = !hasText && session.specialists.length === 0;
+    if (pickAndR1Btn) pickAndR1Btn.disabled = __STATE.r1Locked ? true : (!hasText || _busy);
+    if (pickBtn) pickBtn.disabled = __STATE.r1Locked ? true : (!hasText || _busy);
     setStatus(hasText ? 'Ready • Intake captured' : 'Ready • Waiting for intake');
+    if (!CURRENT_PHASE) applyActiveColumn(computeActiveColumn());
   });
 
-  // ---------- Render helpers: Picked Specialties, Round-1, Round-2 ----------
-  function renderPickedSpecialties(list){
-    round1Container.innerHTML = "";
-    if (!Array.isArray(list) || !list.length){
-      round1Container.innerHTML = '<div class="placeholder">No specialists returned. You can try again.</div>';
-      renderSpecSummary(list); // update Column 1 summary as well
-      return;
-    }
-    list.forEach((spec, idx) => {
-      const letter = String.fromCharCode(65 + idx);
-      const card = document.createElement('div');
-      card.className = 'qs-card';
-      card.id = `spec-${idx}`;
-      card.innerHTML = `
-        <div class="q">
-          ${letter}. ${escapeHtml(spec.name || 'Unnamed specialty')}
-          <span class="pill-kpi" id="r1p-${idx}" style="margin-left:8px;">0/0</span>
-        </div>
-        <div class="rationale"><span class="muted">Why:</span> ${escapeHtml(spec.why || '')}</div>
-        <div id="r1-${idx}" class="grid-qs">
-          <div class="placeholder">Round-1 questions for ${escapeHtml(spec.name || 'this specialty')} will load here.</div>
-        </div>
-      `;
-      round1Container.appendChild(card);
-    });
-    renderSpecSummary(list); // keep Column 1 summary in sync
-    updateR1ProgressUI();
-  }
-
-  // NEW: Column 1 specialist summary (A–E)
+  // ---------- Column 1 specialist summary (A–E) ----------
   function renderSpecSummary(list){
     const specListEl = document.getElementById('specList');
     const kpiEl = document.getElementById('specKpi');
     if (kpiEl) {
       const count = Array.isArray(list) ? list.length : 0;
-      kpiEl.textContent = `${count}/${__CFG.COUNTS.NUM_SPECIALISTS}`;
+      kpiEl.textContent = `${count}/${window.__CFG.COUNTS.NUM_SPECIALISTS}`;
     }
     if (!specListEl) return;
     if (!Array.isArray(list) || !list.length){
@@ -1173,25 +1300,17 @@ Wait for the next message beginning with \`CONTEXT_JSON:\`. Parse it and respond
     specListEl.innerHTML = html;
   }
 
-  function buildPriorQuestions(currentIdx){
-    const prior = [];
-    for (let i = 0; i < currentIdx; i++){
-      const specName = session.specialists[i]?.name || '';
-      const arr = session.round1[specName];
-      if (Array.isArray(arr) && arr.length){
-        for (const item of arr){
-          if (item && item.q) prior.push({ specialist: specName, q: item.q });
-        }
-      }
-    }
-    return prior;
-  }
-
+  // ---------- Render helpers (updated): R1 QUESTIONS ONLY in Column 2 ----------
   function renderR1Questions(idx, specName, qArray){
-    const container = document.getElementById(`r1-${idx}`);
-    if (!container) return;
+    let container = document.getElementById(`r1-${idx}`);
+    if (!container) {
+      container = document.createElement('div');
+      container.className = 'grid-qs';
+      container.id = `r1-${idx}`;
+      round1Container.appendChild(container);
+    }
     if (!Array.isArray(qArray) || !qArray.length){
-      container.innerHTML = `<div class="placeholder">No questions returned for ${escapeHtml(specName)}.</div>`;
+      container.innerHTML = `<div class="placeholder">No questions returned.</div>`;
       updateR1ProgressUI();
       return;
     }
@@ -1212,31 +1331,36 @@ Wait for the next message beginning with \`CONTEXT_JSON:\`. Parse it and respond
     qArray.forEach((_, qIdx) => {
       const ta = document.getElementById(`r1a-${idx}-${qIdx}`);
       if (!ta) return;
-      if (!__CFG.RUNTIME.ALLOW_BLANK_ANSWERS_R1) setAnswerValidityClass(ta, false);
+      if (!window.__CFG.RUNTIME.ALLOW_BLANK_ANSWERS_R1) setAnswerValidityClass(ta, false);
       ta.addEventListener('input', () => {
         const val = (ta.value || '');
         const arr = session.round1[specName];
         if (Array.isArray(arr) && arr[qIdx]) arr[qIdx].answer = val;
-        const ok = (val.trim().length > 0) || __CFG.RUNTIME.ALLOW_BLANK_ANSWERS_R1;
-        if (!__CFG.RUNTIME.ALLOW_BLANK_ANSWERS_R1) setAnswerValidityClass(ta, ok);
+        const ok = (val.trim().length > 0) || window.__CFG.RUNTIME.ALLOW_BLANK_ANSWERS_R1;
+        if (!window.__CFG.RUNTIME.ALLOW_BLANK_ANSWERS_R1) setAnswerValidityClass(ta, ok);
         updateR1ProgressUI();
       });
     });
     updateR1ProgressUI();
   }
 
-  function renderR1Unavailable(idx, specName, reasonText){
-    const container = document.getElementById(`r1-${idx}`);
-    if (!container) return;
+  function renderR1Unavailable(idx, _specName, reasonText){
+    let container = document.getElementById(`r1-${idx}`);
+    if (!container) {
+      container = document.createElement('div');
+      container.className = 'grid-qs';
+      container.id = `r1-${idx}`;
+      round1Container.appendChild(container);
+    }
     container.innerHTML = `
       <div class="placeholder">
-        <span class="tag-bad">Round-1 unavailable</span> for ${escapeHtml(specName)} — ${escapeHtml(reasonText || '2 attempts failed')}.
+        <span class="tag-bad">Round-1 unavailable</span> — ${escapeHtml(reasonText || '2 attempts failed')}.
         You may proceed with other specialties.
       </div>`;
     updateR1ProgressUI();
   }
 
-  // ---------- Round-2 rendering ----------
+  // ---------- Round-2 rendering (unchanged headers ok here) ----------
   function buildPriorRound2Questions(currentIdx) {
     const prior = [];
     for (let i = 0; i < currentIdx; i++) {
@@ -1280,13 +1404,13 @@ Wait for the next message beginning with \`CONTEXT_JSON:\`. Parse it and respond
     (qArray || []).forEach((_, qIdx) => {
       const ta = document.getElementById(`r2a-${specIdx}-${qIdx}`);
       if (!ta) return;
-      if (!__CFG.RUNTIME.ALLOW_BLANK_ANSWERS_R2) setAnswerValidityClass(ta, false);
+      if (!window.__CFG.RUNTIME.ALLOW_BLANK_ANSWERS_R2) setAnswerValidityClass(ta, false);
       ta.addEventListener('input', () => {
         const val = (ta.value || '');
         const arr = session.round2[specName];
         if (Array.isArray(arr) && arr[qIdx]) arr[qIdx].answer = val;
-        const ok = (val.trim().length > 0) || __CFG.RUNTIME.ALLOW_BLANK_ANSWERS_R2;
-        if (!__CFG.RUNTIME.ALLOW_BLANK_ANSWERS_R2) setAnswerValidityClass(ta, ok);
+        const ok = (val.trim().length > 0) || window.__CFG.RUNTIME.ALLOW_BLANK_ANSWERS_R2;
+        if (!window.__CFG.RUNTIME.ALLOW_BLANK_ANSWERS_R2) setAnswerValidityClass(ta, ok);
         updateR2ProgressUI();
       });
     });
@@ -1304,14 +1428,14 @@ Wait for the next message beginning with \`CONTEXT_JSON:\`. Parse it and respond
     card.innerHTML = `
       <div class="q">${String.fromCharCode(65 + specIdx)}. ${escapeHtml(specName)} — Round-2 Unavailable</div>
       <div class="placeholder">
-        <span class="tag-bad">Round-2 unavailable</span> for ${escapeHtml(specName)} — ${escapeHtml(reasonText || '2 attempts failed')}.
+        <span class="tag-bad">Round-2 unavailable</span> — ${escapeHtml(reasonText || '2 attempts failed')}.
         You may proceed with other specialties.
       </div>
     `;
     updateR2ProgressUI();
   }
 
-  // ---------- Hypotheses rendering & progress (NEW) ----------
+  // ---------- Hypotheses rendering & progress ----------
   function updateHypProgressUI() {
     const total = session.specialists.length || 0;
     let processed = 0;
@@ -1370,7 +1494,7 @@ Wait for the next message beginning with \`CONTEXT_JSON:\`. Parse it and respond
   // ---------- Clear Session ----------
   clearBtn.addEventListener('click', (e) => {
     e.preventDefault();
-    if (__CFG.UI.CONFIRM_ON_CLEAR) {
+    if (window.__CFG.UI.CONFIRM_ON_CLEAR) {
       const ok = confirm("Clear the current session? This cannot be undone.");
       if (!ok) return;
     }
@@ -1379,65 +1503,62 @@ Wait for the next message beginning with \`CONTEXT_JSON:\`. Parse it and respond
     __STATE.hypothesesRan = false;
 
     intakeEl.value = "";
-    round1Container.innerHTML = '<div class="placeholder">Specialty sections (A…E) will render here. Each will show questions with one simple text box per question.</div>';
-    round2Container.innerHTML = `
-      <div class="qs-card">
-        <div class="q">[Example] Cardiology — Follow-up Q1 will appear here</div>
-        <div class="rationale">Rationale: rule-in/rule-out specifics (example)</div>
-        <textarea disabled placeholder="Doctor’s answer goes here (example)"></textarea>
-      </div>`;
-    hypContainer.innerHTML = '<div class="placeholder">After Round-2 answers are complete, click “Generate Hypotheses”.</div>';
+    round1Container.innerHTML = '<div class="placeholder">Pick specialists before you can generate Round 1.</div>';
+    round2Container.innerHTML = '<div class="placeholder">Generate Round 1 before you can generate Round 2.</div>';
+    hypContainer.innerHTML = '<div class="placeholder">Generate Round 2 before you can generate Hypotheses and Consensus.</div>';
     consensusNoteEl.textContent = '[Consensus note will render here]';
     r1KpiEl.textContent = '0/0';
     if (hypKpiEl) hypKpiEl.textContent = '0/0';
 
-    // Reset Column 1 summary
-    const specListEl = document.getElementById('specList');
-    const kpiEl = document.getElementById('specKpi');
-    if (specListEl) specListEl.innerHTML = '<div class="placeholder">After clicking “Pick Specialists”, the chosen specialties and reasons appear here.</div>';
-    if (kpiEl) kpiEl.textContent = `0/${__CFG.COUNTS.NUM_SPECIALISTS}`;
-
     setStatus('Ready • Session cleared');
 
-    genR1Btn.disabled = true;
-    genR2Btn.disabled = true;
-    genHypBtn.disabled = true;
-    genConBtn.disabled = true;
+    if (genR1Btn) genR1Btn.disabled = true;
+    if (genR2Btn) genR2Btn.disabled = true;
+    if (genHypBtn) genHypBtn.disabled = true;
+    if (genConBtn) genConBtn.disabled = true;
     copyBtn.disabled = true;
-    pickBtn.disabled = true;
+
+    if (pickBtn) pickBtn.disabled = true;
+    if (pickAndR1Btn) pickAndR1Btn.disabled = true;
+    if (genHypAndConBtn) genHypAndConBtn.disabled = true;
     clearBtn.disabled = true;
+
+    // End any phase/overlay and default highlight to Column 1
+    endPhase(); // safe even if no phase
+    applyActiveColumn('col-intake');
   });
 
-  // ---------- Pick Specialists (2.1) ----------
-  pickBtn.addEventListener('click', async (e) => {
-    e.preventDefault();
+  // ---------- Reusable flows (extracted) ----------
+  async function runPickSpecialistsFlow(){
     if (__STATE.r1Locked) { setStatus('Round-1 is locked. Clear Session to pick specialists again.'); return; }
     const intake = (intakeEl.value || '').trim();
     if (!intake){ setStatus('Please paste the patient story first.'); return; }
 
-    if (!__CFG.PROMPTS.PICK_SPECIALISTS || !__CFG.PROMPTS.PICK_SPECIALISTS.trim()){
+    if (!window.__CFG.PROMPTS.PICK_SPECIALISTS || !window.__CFG.PROMPTS.PICK_SPECIALISTS.trim()){
       alert('Please paste your PICK_SPECIALISTS prompt into CFG.PROMPTS.PICK_SPECIALISTS before running.');
       return;
     }
 
-    setBusy(true, 'Picking specialists');
+    setBusy(true, 'Picking specialists…');
+    beginPhase('pick', 'col-intake', 'Picking specialists…');
 
     const body = {
       role: "pick_specialists",
       payload: {
-        prompt: __CFG.PROMPTS.PICK_SPECIALISTS,
+        prompt: window.__CFG.PROMPTS.PICK_SPECIALISTS,
         context: {
           intakeText: intake,
-          numSpecialists: __CFG.COUNTS.NUM_SPECIALISTS,
-          languageMode: __CFG.LANGUAGE_MODE
+          numSpecialists: window.__CFG.COUNTS.NUM_SPECIALISTS,
+          languageMode: window.__CFG.LANGUAGE_MODE
         }
       }
     };
 
     try {
       const data = await withRetry(
-        () => callProxyWithTimeout(body, __CFG.RUNTIME.PER_CALL_TIMEOUT_MS),
-        __CFG.RUNTIME.RETRY_ONCE ? 1 : 0
+        () => callProxyWithTimeout(body, window.__CFG.RUNTIME.PER_CALL_TIMEOUT_MS),
+        window.__CFG.RUNTIME.RETRY_ONCE ? 1 : 0,
+        (attempt, total) => resetOverlayAttempt(window.__CFG.RUNTIME.PER_CALL_TIMEOUT_MS, attempt, total)
       );
 
       if (!Array.isArray(data) || !data.length){
@@ -1445,54 +1566,66 @@ Wait for the next message beginning with \`CONTEXT_JSON:\`. Parse it and respond
       }
 
       session.patient_intake = intake;
-      session.specialists = data.slice(0, __CFG.COUNTS.NUM_SPECIALISTS);
-      renderPickedSpecialties(session.specialists);
-
-      setStatus(`Picked ${session.specialists.length} specialists. You can now Generate Round-1.`);
-      genR1Btn.disabled = false;
+      session.specialists = data.slice(0, window.__CFG.COUNTS.NUM_SPECIALISTS);
+      renderSpecSummary(session.specialists);
+      setStatus(`Picked ${session.specialists.length} specialists. Generating Round-1…`);
       clearBtn.disabled = false;
     } catch (err) {
       setStatus(`Pick specialists failed: ${String(err && err.message ? err.message : err)}. You can try again.`);
       console.error(err);
-    } finally { setBusy(false, ''); }
-  });
+      throw err;
+    } finally {
+      endPhase();
+      setBusy(false, '');
+      setButtonsState();
+    }
+  }
 
-  // ---------- Round-1 Generation (2.2) ----------
-  genR1Btn.addEventListener('click', async (e) => {
-    e.preventDefault();
+  async function runRound1Flow(){
     if (__STATE.r1Locked) { setStatus('Round-1 is locked. Clear Session to run it again.'); return; }
-    if (!__CFG.PROMPTS.ROUND1 || !__CFG.PROMPTS.ROUND1.trim()){
+    if (!window.__CFG.PROMPTS.ROUND1 || !window.__CFG.PROMPTS.ROUND1.trim()){
       alert('Please paste your ROUND1 prompt into CFG.PROMPTS.ROUND1 before running.'); return;
     }
     if (!Array.isArray(session.specialists) || session.specialists.length === 0){
       alert('No specialists available. Run "Pick Specialists" first.'); return;
     }
 
-    setBusy(true, 'Generating Round-1');
+    setBusy(true, 'Generating Round-1…');
+    beginPhase('round1', 'col-round1', 'Generating Round-1…');
 
     const total = session.specialists.length;
     let generatedAny = false;
+
+    // Clear Column 2 container before generating
+    round1Container.innerHTML = '';
 
     for (let idx = 0; idx < total; idx++){
       const specName = session.specialists[idx]?.name || '';
       if (!specName){ continue; }
 
+      let container = document.getElementById(`r1-${idx}`);
+      if (!container) {
+        container = document.createElement('div');
+        container.className = 'grid-qs';
+        container.id = `r1-${idx}`;
+        round1Container.appendChild(container);
+      }
+      container.innerHTML = `<div class="placeholder">Generating questions…</div>`;
+
       const priorQuestions = buildPriorQuestions(idx);
-      const container = document.getElementById(`r1-${idx}`);
-      if (container) container.innerHTML = `<div class="placeholder">Generating Round-1 for ${escapeHtml(specName)}…</div>`;
 
       const payload = {
         role: "round1_questions",
         payload: {
-          questionsPerSpecialty: __CFG.COUNTS.QUESTIONS_PER_SPECIALTY_ROUND1,
+          questionsPerSpecialty: window.__CFG.COUNTS.QUESTIONS_PER_SPECIALTY_ROUND1,
           specialistName: specName,
-          languageMode: __CFG.LANGUAGE_MODE,
-          prompt: __CFG.PROMPTS.ROUND1,
+          languageMode: window.__CFG.LANGUAGE_MODE,
+          prompt: window.__CFG.PROMPTS.ROUND1,
           context: {
             intakeText: session.patient_intake,
             specialist: specName,
-            numQuestions: __CFG.COUNTS.QUESTIONS_PER_SPECIALTY_ROUND1,
-            languageMode: __CFG.LANGUAGE_MODE,
+            numQuestions: window.__CFG.COUNTS.QUESTIONS_PER_SPECIALTY_ROUND1,
+            languageMode: window.__CFG.LANGUAGE_MODE,
             priorQuestions: priorQuestions
           }
         }
@@ -1500,8 +1633,9 @@ Wait for the next message beginning with \`CONTEXT_JSON:\`. Parse it and respond
 
       try {
         const data = await withRetry(
-          () => callProxyWithTimeout(payload, __CFG.RUNTIME.PER_CALL_TIMEOUT_MS),
-          __CFG.RUNTIME.RETRY_ONCE ? 1 : 0
+          () => callProxyWithTimeout(payload, window.__CFG.RUNTIME.PER_CALL_TIMEOUT_MS),
+          window.__CFG.RUNTIME.RETRY_ONCE ? 1 : 0,
+          (attempt, totalAttempts) => resetOverlayAttempt(window.__CFG.RUNTIME.PER_CALL_TIMEOUT_MS, attempt, totalAttempts)
         );
         if (!Array.isArray(data) || !data.length){
           throw new Error('Empty or invalid questions array. Ensure your prompt returns [{ "q": "...", "rationale": "..." }].');
@@ -1510,208 +1644,199 @@ Wait for the next message beginning with \`CONTEXT_JSON:\`. Parse it and respond
         session.round1[specName] = arr;
         renderR1Questions(idx, specName, arr);
         generatedAny = true;
-        setStatus(`Round-1: ${specName} (${idx+1}/${total}) completed.`);
+        setStatus(`Round-1: (${idx+1}/${total}) completed.`);
       } catch (err) {
         console.error(err);
         session.round1[specName] = [];
         renderR1Unavailable(idx, specName, (err && err.message) || 'failed');
-        setStatus(`Round-1: ${specName} failed after retry. Continuing…`);
+        setStatus(`Round-1: a specialty failed after retry. Continuing…`);
       }
     }
 
     setStatus('Round-1 complete.');
     setBusy(false, '');
+    endPhase();
     if (generatedAny) setRound1Lock(true);
     setButtonsState();
-  });
+  }
 
-  // ---------- Round-2 Generation (2.4) ----------
-  const r2BtnEl = document.getElementById('btnGenerateR2');
-  if (r2BtnEl) {
-    r2BtnEl.addEventListener('click', async (e) => {
-      e.preventDefault();
-      if (r2BtnEl.disabled) {
-        highlightMissingR1Answers();
-        const first = findFirstMissingR1Answer();
-        if (first) { setStatus('Round-1 answers incomplete — fill highlighted fields to proceed.'); first.scrollIntoView({behavior:'smooth',block:'center'}); first.focus({preventScroll:true}); }
-        else alert('Round-1 answers are not complete yet.');
-        return;
+  function buildPriorQuestions(currentIdx){
+    const prior = [];
+    for (let i = 0; i < currentIdx; i++){
+      const specName = session.specialists[i]?.name || '';
+      const arr = session.round1[specName];
+      if (Array.isArray(arr) && arr.length){
+        for (const item of arr){
+          if (item && item.q) prior.push({ specialist: specName, q: item.q });
+        }
       }
-      if (!__CFG.PROMPTS.ROUND2 || !__CFG.PROMPTS.ROUND2.trim()) { alert('Please paste your ROUND2 prompt into CFG.PROMPTS.ROUND2 before running.'); return; }
-      if (!Array.isArray(session.specialists) || session.specialists.length === 0) { alert('No specialists available.'); return; }
+    }
+    return prior;
+  }
 
-      round2Container.innerHTML = '';
-      setBusy(true, 'Generating Round-2');
+  async function runRound2Flow(){
+    round2Container.innerHTML = '';
+    setBusy(true, 'Generating Round-2…');
+    beginPhase('round2', 'col-round2', 'Generating Round-2…');
 
-      try {
-        const total = session.specialists.length;
-        for (let idx = 0; idx < total; idx++) {
-          const specName = session.specialists[idx]?.name || '';
-          if (!specName) continue;
-          const r1Array = Array.isArray(session.round1[specName]) ? session.round1[specName] : [];
-          const priorR2Qs = buildPriorRound2Questions(idx);
+    try {
+      const total = session.specialists.length;
+      for (let idx = 0; idx < total; idx++) {
+        const specName = session.specialists[idx]?.name || '';
+        if (!specName) continue;
+        const r1Array = Array.isArray(session.round1[specName]) ? session.round1[specName] : [];
+        const priorR2Qs = buildPriorRound2Questions(idx);
 
-          let pendingCard = document.getElementById(`r2-s-${idx}`);
-          if (!pendingCard) {
-            pendingCard = document.createElement('div');
-            pendingCard.className = 'qs-card';
-            pendingCard.id = `r2-s-${idx}`;
-            pendingCard.innerHTML = `
-              <div class="q">${String.fromCharCode(65 + idx)}. ${escapeHtml(specName)} — Generating Round-2…</div>
-              <div class="placeholder">Please wait…</div>
-            `;
-            round2Container.appendChild(pendingCard);
-          } else {
-            pendingCard.innerHTML = `
-              <div class="q">${String.fromCharCode(65 + idx)}. ${escapeHtml(specName)} — Generating Round-2…</div>
-              <div class="placeholder">Please wait…</div>
-            `;
-          }
+        let pendingCard = document.getElementById(`r2-s-${idx}`);
+        if (!pendingCard) {
+          pendingCard = document.createElement('div');
+          pendingCard.className = 'qs-card';
+          pendingCard.id = `r2-s-${idx}`;
+          pendingCard.innerHTML = `
+            <div class="q">${String.fromCharCode(65 + idx)}. ${escapeHtml(specName)} — Generating Round-2…</div>
+            <div class="placeholder">Please wait…</div>
+          `;
+          round2Container.appendChild(pendingCard);
+        } else {
+          pendingCard.innerHTML = `
+            <div class="q">${String.fromCharCode(65 + idx)}. ${escapeHtml(specName)} — Generating Round-2…</div>
+            <div class="placeholder">Please wait…</div>
+          `;
+        }
 
-          const body = {
-            role: "round2_questions",
-            payload: {
-              prompt: __CFG.PROMPTS.ROUND2,
-              questionsPerSpecialty: __CFG.COUNTS.QUESTIONS_PER_SPECIALTY_ROUND2,
+        const body = {
+          role: "round2_questions",
+          payload: {
+            prompt: window.__CFG.PROMPTS.ROUND2,
+            questionsPerSpecialty: window.__CFG.COUNTS.QUESTIONS_PER_SPECIALTY_ROUND2,
+            specialistName: specName,
+            languageMode: window.__CFG.LANGUAGE_MODE,
+            context: {
+              intakeText: session.patient_intake,
               specialistName: specName,
-              languageMode: __CFG.LANGUAGE_MODE,
-              context: {
-                intakeText: session.patient_intake,
-                specialistName: specName,
-                questionsPerSpecialty: __CFG.COUNTS.QUESTIONS_PER_SPECIALTY_ROUND2,
-                languageMode: __CFG.LANGUAGE_MODE,
-                round1QA: r1Array.map(({ q, rationale, answer }) => ({ q, rationale, answer })),
-                priorRound2Questions: priorR2Qs
-              }
+              questionsPerSpecialty: window.__CFG.COUNTS.QUESTIONS_PER_SPECIALTY_ROUND2,
+              languageMode: window.__CFG.LANGUAGE_MODE,
+              round1QA: r1Array.map(({ q, rationale, answer }) => ({ q, rationale, answer })),
+              priorRound2Questions: priorR2Qs
             }
-          };
-
-          try {
-            const data = await withRetry(
-              () => callProxyWithTimeout(body, __CFG.RUNTIME.PER_CALL_TIMEOUT_MS),
-              __CFG.RUNTIME.RETRY_ONCE ? 1 : 0
-            );
-            if (!Array.isArray(data) || !data.length) throw new Error('Empty or invalid follow-up array.');
-            session.round2[specName] = data.map(item => ({ q: String(item.q || ''), rationale: String(item.rationale || ''), answer: "" }));
-            renderR2Questions(idx, specName, session.round2[specName]);
-            setStatus(`Round-2: ${specName} (${idx + 1}/${total}) completed.`);
-          } catch (errSpec) {
-            console.error(errSpec);
-            session.round2[specName] = [];
-            renderR2Unavailable(idx, specName, (errSpec && errSpec.message) || 'failed');
-            setStatus(`Round-2: ${specName} failed after retry. Continuing…`);
           }
-        }
+        };
 
-        const anyR2 = Object.values(session.round2).some(arr => Array.isArray(arr) && arr.length > 0);
-        if (anyR2) setStatus('Round-2 complete. You can now generate Diagnostic Hypotheses.');
-        else setStatus('Round-2 finished with no follow-ups. You may adjust prompts or counts and retry.');
-      } finally {
-        setBusy(false, '');
-        setButtonsState();
+        try {
+          const data = await withRetry(
+            () => callProxyWithTimeout(body, window.__CFG.RUNTIME.PER_CALL_TIMEOUT_MS),
+            window.__CFG.RUNTIME.RETRY_ONCE ? 1 : 0,
+            (attempt, totalAttempts) => resetOverlayAttempt(window.__CFG.RUNTIME.PER_CALL_TIMEOUT_MS, attempt, totalAttempts)
+          );
+          if (!Array.isArray(data) || !data.length) throw new Error('Empty or invalid follow-up array.');
+          session.round2[specName] = data.map(item => ({ q: String(item.q || ''), rationale: String(item.rationale || ''), answer: "" }));
+          renderR2Questions(idx, specName, session.round2[specName]);
+          setStatus(`Round-2: ${specName} (${idx + 1}/${total}) completed.`);
+        } catch (errSpec) {
+          console.error(errSpec);
+          session.round2[specName] = [];
+          renderR2Unavailable(idx, specName, (errSpec && errSpec.message) || 'failed');
+          setStatus(`Round-2: ${specName} failed after retry. Continuing…`);
+        }
       }
-    });
+
+      const anyR2 = Object.values(session.round2).some(arr => Array.isArray(arr) && arr.length > 0);
+      if (anyR2) setStatus('Round-2 complete. You can now generate Diagnostic Hypotheses & Consensus.');
+      else setStatus('Round-2 finished with no follow-ups. You may adjust prompts or counts and retry.');
+    } finally {
+      setBusy(false, '');
+      endPhase();
+      setButtonsState();
+    }
   }
 
-  // ---------- Diagnostic Hypotheses (NEW) ----------
-  if (genHypBtn) {
-    genHypBtn.addEventListener('click', async (e) => {
-      e.preventDefault();
-
-      if (genHypBtn.disabled) {
-        highlightMissingR2Answers();
-        const first = findFirstMissingR2Answer();
-        if (first) { setStatus('Round-2 answers incomplete — fill highlighted fields to proceed.'); first.scrollIntoView({behavior:'smooth',block:'center'}); first.focus({preventScroll:true}); }
-        else alert('Round-2 answers are not complete yet.');
-        return;
-      }
-      if (!__CFG.PROMPTS.DIAGNOSTIC_HYPOTHESIS || !__CFG.PROMPTS.DIAGNOSTIC_HYPOTHESIS.trim()) {
-        alert('Please paste your DIAGNOSTIC_HYPOTHESIS prompt into CFG.PROMPTS.DIAGNOSTIC_HYPOTHESIS.');
-        return;
-      }
-
-      // Prepare the panel
-      hypContainer.innerHTML = '';
-      __STATE.hypothesesRan = false;
-      session.hypotheses = {};
-
-      setBusy(true, 'Generating Diagnostic Hypotheses');
-
-      try {
-        const total = session.specialists.length;
-        for (let idx = 0; idx < total; idx++) {
-          const specName = session.specialists[idx]?.name || '';
-          if (!specName) continue;
-
-          renderHypothesisPending(idx, specName);
-
-          const r1Array = Array.isArray(session.round1[specName]) ? session.round1[specName] : [];
-          const r2Array = Array.isArray(session.round2[specName]) ? session.round2[specName] : [];
-
-          const body = {
-            role: "diagnostic_hypothesis",
-            payload: {
-              prompt: __CFG.PROMPTS.DIAGNOSTIC_HYPOTHESIS,
-              context: {
-                intakeText: session.patient_intake,
-                specialistName: specName,
-                languageMode: __CFG.LANGUAGE_MODE,
-                round1QA: r1Array.map(({ q, rationale, answer }) => ({ q, rationale, answer })),
-                round2QA: r2Array.map(({ q, rationale, answer }) => ({ q, rationale, answer }))
-              }
-            }
-          };
-
-          try {
-            const data = await withRetry(
-              () => callProxyWithTimeout(body, __CFG.RUNTIME.PER_CALL_TIMEOUT_MS),
-              __CFG.RUNTIME.RETRY_ONCE ? 1 : 0
-            );
-            if (!data || typeof data !== "object") throw new Error('Empty/invalid hypothesis object.');
-            const { diagnosis, justification, steelman } = data;
-            if (typeof diagnosis !== 'string' || typeof justification !== 'string' || typeof steelman !== 'string') {
-              throw new Error('Expected { diagnosis, justification, steelman } as strings.');
-            }
-            session.hypotheses[specName] = { diagnosis, justification, steelman };
-            renderHypothesis(idx, specName, session.hypotheses[specName]);
-            setStatus(`Hypothesis: ${specName} (${idx + 1}/${total}) completed.`);
-          } catch (errSpec) {
-            console.error(errSpec);
-            renderHypothesisUnavailable(idx, specName, (errSpec && errSpec.message) || 'failed');
-            setStatus(`Hypothesis: ${specName} failed after retry. Continuing…`);
-          }
-        }
-
-        __STATE.hypothesesRan = true;
-        setStatus('Hypotheses complete. You can now generate the consensus note.');
-      } finally {
-        setBusy(false, '');
-        setButtonsState();
-      }
-    });
-  }
-
-  // ---------- Consensus (2.6) — now includes hypotheses ----------
-  genConBtn.addEventListener('click', async (e) => {
-    e.preventDefault();
-
-    if (genConBtn.disabled) {
-      if (!__STATE.hypothesesRan) {
-        alert('Please run “Generate Hypotheses” first.');
-        return;
-      }
+  async function runHypothesesFlow(){
+    if (genHypAndConBtn && genHypAndConBtn.disabled) {
       highlightMissingR2Answers();
       const first = findFirstMissingR2Answer();
       if (first) { setStatus('Round-2 answers incomplete — fill highlighted fields to proceed.'); first.scrollIntoView({behavior:'smooth',block:'center'}); first.focus({preventScroll:true}); }
-      return;
+      else alert('Round-2 answers are not complete yet.');
+      throw new Error('R2 answers incomplete');
+    }
+    if (!window.__CFG.PROMPTS.DIAGNOSTIC_HYPOTHESIS || !window.__CFG.PROMPTS.DIAGNOSTIC_HYPOTHESIS.trim()) {
+      alert('Please paste your DIAGNOSTIC_HYPOTHESIS prompt into CFG.PROMPTS.DIAGNOSTIC_HYPOTHESIS.');
+      throw new Error('Missing DIAGNOSTIC_HYPOTHESIS prompt');
     }
 
-    if (!__CFG.PROMPTS.CONSENSUS || !__CFG.PROMPTS.CONSENSUS.trim()) {
+    hypContainer.innerHTML = '';
+    __STATE.hypothesesRan = false;
+    session.hypotheses = {};
+
+    setBusy(true, 'Generating Diagnostic Hypotheses…');
+    beginPhase('hypcons', 'col-round2', 'Generating Hypotheses & Consensus…');
+
+    try {
+      const total = session.specialists.length;
+      for (let idx = 0; idx < total; idx++) {
+        const specName = session.specialists[idx]?.name || '';
+        if (!specName) continue;
+
+        renderHypothesisPending(idx, specName);
+
+        const r1Array = Array.isArray(session.round1[specName]) ? session.round1[specName] : [];
+        const r2Array = Array.isArray(session.round2[specName]) ? session.round2[specName] : [];
+
+        const body = {
+          role: "diagnostic_hypothesis",
+          payload: {
+            prompt: window.__CFG.PROMPTS.DIAGNOSTIC_HYPOTHESIS,
+            context: {
+              intakeText: session.patient_intake,
+              specialistName: specName,
+              languageMode: window.__CFG.LANGUAGE_MODE,
+              round1QA: r1Array.map(({ q, rationale, answer }) => ({ q, rationale, answer })),
+              round2QA: r2Array.map(({ q, rationale, answer }) => ({ q, rationale, answer }))
+            }
+          }
+        };
+
+        try {
+          const data = await withRetry(
+            () => callProxyWithTimeout(body, window.__CFG.RUNTIME.PER_CALL_TIMEOUT_MS),
+            window.__CFG.RUNTIME.RETRY_ONCE ? 1 : 0,
+            (attempt, totalAttempts) => resetOverlayAttempt(window.__CFG.RUNTIME.PER_CALL_TIMEOUT_MS, attempt, totalAttempts)
+          );
+          if (!data || typeof data !== "object") throw new Error('Empty/invalid hypothesis object.');
+          const { diagnosis, justification, steelman } = data;
+          if (typeof diagnosis !== 'string' || typeof justification !== 'string' || typeof steelman !== 'string') {
+            throw new Error('Expected { diagnosis, justification, steelman } as strings.');
+          }
+          session.hypotheses[specName] = { diagnosis, justification, steelman };
+          renderHypothesis(idx, specName, session.hypotheses[specName]);
+          setStatus(`Hypothesis: ${specName} (${idx + 1}/${total}) completed.`);
+        } catch (errSpec) {
+          console.error(errSpec);
+          renderHypothesisUnavailable(idx, specName, (errSpec && errSpec.message) || 'failed');
+          setStatus(`Hypothesis: ${specName} failed after retry. Continuing…`);
+        }
+      }
+
+      __STATE.hypothesesRan = true;
+      setStatus('Hypotheses complete. Generating consensus…');
+    } finally {
+      setBusy(false, '');
+      // keep overlay; consensus flow continues and will endPhase() after it finishes
+      setButtonsState();
+    }
+  }
+
+  async function runConsensusFlow(){
+    if (!__STATE.hypothesesRan) {
+      alert('Please generate Hypotheses first.');
+      throw new Error('Hypotheses not yet run');
+    }
+    if (!window.__CFG.PROMPTS.CONSENSUS || !window.__CFG.PROMPTS.CONSENSUS.trim()) {
       alert('Please paste your CONSENSUS prompt into CFG.PROMPTS.CONSENSUS before running.');
-      return;
+      throw new Error('Missing CONSENSUS prompt');
     }
 
-    setBusy(true, 'Generating Consensus');
+    setBusy(true, 'Generating Consensus…');
+    // Overlay already started in runHypothesesFlow; just reset attempt per call below
 
     // Transform hypotheses (strings -> string[]), as the CONSENSUS prompt expects arrays
     function stringToBulletsArray(s) {
@@ -1738,22 +1863,23 @@ Wait for the next message beginning with \`CONTEXT_JSON:\`. Parse it and respond
     const body = {
       role: "consensus",
       payload: {
-        prompt: __CFG.PROMPTS.CONSENSUS,
+        prompt: window.__CFG.PROMPTS.CONSENSUS,
         context: {
           intakeText: session.patient_intake,
           specialists: session.specialists,
           round1: session.round1,
           round2: session.round2,
-          hypotheses: ctxHypotheses,                 // arrays now aligned with prompt schema
-          languageMode: __CFG.LANGUAGE_MODE
+          hypotheses: ctxHypotheses,
+          languageMode: window.__CFG.LANGUAGE_MODE
         }
       }
     };
 
     try {
       const data = await withRetry(
-        () => callProxyWithTimeout(body, __CFG.RUNTIME.PER_CALL_TIMEOUT_MS),
-        __CFG.RUNTIME.RETRY_ONCE ? 1 : 0
+        () => callProxyWithTimeout(body, window.__CFG.RUNTIME.PER_CALL_TIMEOUT_MS),
+        window.__CFG.RUNTIME.RETRY_ONCE ? 1 : 0,
+        (attempt, totalAttempts) => resetOverlayAttempt(window.__CFG.RUNTIME.PER_CALL_TIMEOUT_MS, attempt, totalAttempts)
       );
 
       const note = (data && typeof data.noteText === 'string') ? data.noteText : '';
@@ -1765,11 +1891,86 @@ Wait for the next message beginning with \`CONTEXT_JSON:\`. Parse it and respond
     } catch (err) {
       console.error(err);
       setStatus(`Consensus failed: ${String(err && err.message ? err.message : err)}. You can try again.`);
+      throw err;
     } finally {
       setBusy(false, '');
+      endPhase(); // close overlay and recompute binary highlight (Column 4 now active)
       setButtonsState();
     }
-  });
+  }
+
+  // ---------- Pick Specialists (legacy button) now uses flow ----------
+  if (pickBtn) {
+    pickBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      await runPickSpecialistsFlow();
+    });
+  }
+
+  // ---------- NEW combined CTA: Pick Specialists & Generate R1 ----------
+  if (pickAndR1Btn) {
+    pickAndR1Btn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      try {
+        await runPickSpecialistsFlow();
+        if (session.specialists.length > 0) {
+          await runRound1Flow();
+        }
+      } catch (_) {
+        // errors are surfaced via status; no rethrow
+      }
+    });
+  }
+
+  // ---------- Round-1 Generation (legacy hidden button) ----------
+  if (genR1Btn) {
+    genR1Btn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      await runRound1Flow();
+    });
+  }
+
+  // ---------- Round-2 Generation ----------
+  if (genR2Btn) {
+    genR2Btn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      if (genR2Btn.disabled) {
+        highlightMissingR1Answers();
+        const first = findFirstMissingR1Answer();
+        if (first) { setStatus('Round-1 answers incomplete — fill highlighted fields to proceed.'); first.scrollIntoView({behavior:'smooth',block:'center'}); first.focus({preventScroll:true}); }
+        else alert('Round-1 answers are not complete yet.');
+        return;
+      }
+      await runRound2Flow();
+    });
+  }
+
+  // ---------- NEW combined Hypotheses & Consensus CTA (Column 3) ----------
+  if (genHypAndConBtn) {
+    genHypAndConBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      try {
+        await runHypothesesFlow();
+        await runConsensusFlow();
+      } catch (_) {
+        // surfaced via status
+      }
+    });
+  }
+
+  // ---------- Legacy Column-4 buttons kept operational (hidden) ----------
+  if (genHypBtn) {
+    genHypBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      try { await runHypothesesFlow(); } finally { endPhase(); }
+    });
+  }
+  if (genConBtn) {
+    genConBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      try { beginPhase('hypcons','col-round2','Generating Consensus…'); await runConsensusFlow(); } catch(_) {} finally { /* runConsensusFlow ends phase */ }
+    });
+  }
 
   // ---------- Copy note ----------
   copyBtn.addEventListener('click', async (e) => {
@@ -1780,7 +1981,6 @@ Wait for the next message beginning with \`CONTEXT_JSON:\`. Parse it and respond
       await navigator.clipboard.writeText(text);
       setStatus('Consensus copied to clipboard.');
     } catch {
-      // Fallback: select + copy (best-effort)
       const sel = window.getSelection();
       const range = document.createRange();
       range.selectNodeContents(consensusNoteEl);
@@ -1794,16 +1994,28 @@ Wait for the next message beginning with \`CONTEXT_JSON:\`. Parse it and respond
   // ---------- Initial state ----------
   const __CFG = window.__CFG;
   setRound1Lock(false);
-  pickBtn.disabled  = true;
+
+  // Ensure visibility/hidden states are logically consistent
+  if (pickBtn) pickBtn.disabled  = true;              // hidden legacy
+  if (pickAndR1Btn) pickAndR1Btn.disabled  = true;    // new
   clearBtn.disabled = true;
-  genR1Btn.disabled = true;
-  genR2Btn.disabled = true;
-  genHypBtn.disabled= true;
-  genConBtn.disabled= true;
+  if (genR1Btn) genR1Btn.disabled = true;            // hidden legacy
+  if (genR2Btn) genR2Btn.disabled = true;
+  if (genHypBtn) genHypBtn.disabled= true;           // hidden legacy
+  if (genConBtn) genConBtn.disabled= true;           // hidden legacy
   copyBtn.disabled  = true;
+
   r1KpiEl.textContent = '0/0';
   if (hypKpiEl) hypKpiEl.textContent = '0/0';
   setStatus('Ready • Waiting for intake');
+
+  // Initialize empty-state copies per your spec
+  round1Container.innerHTML = '<div class="placeholder">Pick specialists before you can generate Round 1.</div>';
+  round2Container.innerHTML = '<div class="placeholder">Generate Round 1 before you can generate Round 2.</div>';
+  hypContainer.innerHTML    = '<div class="placeholder">Generate Round 2 before you can generate Hypotheses and Consensus.</div>';
+
+  // === Default highlight: Column 1 ===
+  applyActiveColumn('col-intake');
   </script>
 
 </body>
